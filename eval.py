@@ -1,10 +1,10 @@
-import pdb
-import __init__
-from sarc_utils import *
-from sarc_config import *
-from utils.utils import *
 import argparse
-from sklearn.preprocessing import normalize as normalize_rows
+from sklearn.preprocessing import normalize as unitnorm
+import __init__
+from sarc_config import *
+from sarc_utils import *
+from utils.learn import *
+from utils.utils import *
 
 
 def parse():
@@ -23,6 +23,7 @@ def parse():
   parser.add_argument('-e', '--embed', action='store_true',
                       help='Use embeddings instead of bong')
   return parser.parse_args()
+
 
 def main():
   args = parse()
@@ -84,8 +85,8 @@ def main():
                                n=n, min_count=min_count)
   # Normalize?
   if args.normalize:
-    train_all_vecs = normalize_rows(train_all_vecs)
-    test_all_vecs = normalize_rows(test_all_vecs)
+    unitnorm(train_all_vecs, copy=False)
+    unitnorm(test_all_vecs, copy=False)
   print('Dimension of representation: %d'%train_all_vecs.shape[1])
 
   # Evaluate this classifier on all responses.
@@ -111,4 +112,6 @@ def main():
   print('\tTest acc: ', (test_pred_labels == test_expect_labels).sum() / test_pred_labels.shape[0])
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__': 
+  
+  main()
