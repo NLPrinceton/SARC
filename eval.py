@@ -1,10 +1,10 @@
 import argparse
 from sklearn.preprocessing import normalize as unitnorm
-from sarc_config import *
-from sarc_utils import *
+from sarc import *
+from utils import *
 import __init__
-from utils.learn import *
-from utils.utils import *
+from nlp.embed import *
+from nlp.learn import *
 
 
 def parse():

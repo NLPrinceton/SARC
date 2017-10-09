@@ -1,4 +1,4 @@
 # SARC
 Evaluation code for the Self-Annotated Reddit Corpus
 
-Dependencies: NLPrinceton/utils
+Dependencies: NLPrinceton/nlp
