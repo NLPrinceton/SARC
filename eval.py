@@ -1,8 +1,8 @@
 import argparse
 from sklearn.preprocessing import normalize as unitnorm
-import __init__
 from sarc_config import *
 from sarc_utils import *
+import __init__
 from utils.learn import *
 from utils.utils import *
 
