@@ -70,19 +70,18 @@ def main():
     if args.weights == 'snif':
       weights = sif_weights(train_all_docs_tok, 1E-3)
       weights = {f: 1-w for f, w in weights.items()}
-    vocabulary = {word for partition in (train_all_docs_tok, test_all_docs_tok)
-                  for document in partition for word in document}
-    w2v = vocab2vecs(vocabulary, corpus=corpus, objective=objective, dimension=dimension)
+    w2v = vocab2vecs(ngram_vocab(train_all_docs_tok+test_all_docs_tok), 
+                     corpus=corpus, objective=objective, dimension=dimension)
     train_all_vecs = docs2vecs(train_all_docs_tok, w2v=w2v, weights=weights)
     test_all_vecs = docs2vecs(test_all_docs_tok, w2v=w2v, weights=weights)
   else:
     print('Create bongs')
     n = args.n
     min_count = args.min_count
-    train_all_vecs, vocabulary = docs2bongs(train_all_docs_tok, n=n,
-                                            min_count=min_count)
-    test_all_vecs = docs2bongs(test_all_docs_tok, vocabulary=vocabulary,
-                               n=n, min_count=min_count)
+    vocabulary = ngram_vocab(train_all_docs_tok, n=n, min_count=min_count)
+    train_all_vecs = docs2bongs(train_all_docs_tok, vocabulary)
+    test_all_vecs = docs2bongs(test_all_docs_tok, vocabulary)
+
   # Normalize?
   if args.normalize:
     unitnorm(train_all_vecs, copy=False)
