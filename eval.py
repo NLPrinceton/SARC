@@ -1,5 +1,5 @@
 import argparse
-from sklearn.preprocessing import normalize as unitnorm
+from sklearn.preprocessing import normalize
 from sarc import *
 from utils import *
 import __init__
@@ -84,8 +84,8 @@ def main():
 
   # Normalize?
   if args.normalize:
-    unitnorm(train_all_vecs, copy=False)
-    unitnorm(test_all_vecs, copy=False)
+    normalize(train_all_vecs, copy=False)
+    normalize(test_all_vecs, copy=False)
   print('Dimension of representation: %d'%train_all_vecs.shape[1])
 
   # Evaluate this classifier on all responses.
