@@ -1,10 +1,13 @@
 import argparse
+import nltk
+from sklearn.linear_model import LogisticRegressionCV as LogitCV
 from sklearn.preprocessing import normalize
-from sarc import *
-from utils import *
-import __init__
-from nlp.embed import *
-from nlp.learn import *
+from text_embedding.features import *
+from text_embedding.vectors import *
+from SARC.utils import *
+
+
+VECTORFILES[('Amazon', 'GloVe', 1600)] = '/n/fs/nlpdatasets/AmazonProductData/amazon_glove1600.txt'
 
 
 def parse():
@@ -70,17 +73,19 @@ def main():
     if args.weights == 'snif':
       weights = sif_weights(train_all_docs_tok, 1E-3)
       weights = {f: 1-w for f, w in weights.items()}
-    w2v = vocab2vecs(ngram_vocab(train_all_docs_tok+test_all_docs_tok), 
+    w2v = vocab2vecs({word for doc in train_all_docs_tok+test_all_docs_tok for word in doc}, 
                      corpus=corpus, objective=objective, dimension=dimension)
-    train_all_vecs = docs2vecs(train_all_docs_tok, w2v=w2v, weights=weights)
-    test_all_vecs = docs2vecs(test_all_docs_tok, w2v=w2v, weights=weights)
+    train_all_vecs = docs2vecs(train_all_docs_tok, f2v=w2v, weights=weights)
+    test_all_vecs = docs2vecs(test_all_docs_tok, f2v=w2v, weights=weights)
   else:
     print('Create bongs')
     n = args.n
     min_count = args.min_count
-    vocabulary = ngram_vocab(train_all_docs_tok, n=n, min_count=min_count)
-    train_all_vecs = docs2bongs(train_all_docs_tok, vocabulary)
-    test_all_vecs = docs2bongs(test_all_docs_tok, vocabulary)
+    train_ngrams = [sum((list(nltk.ngrams(doc, k)) for k in range(1, n+1)), []) for doc in train_all_docs_tok]
+    test_ngrams = [sum((list(nltk.ngrams(doc, k)) for k in range(1, n+1)), []) for doc in test_all_docs_tok]
+    vocabulary = feature_vocab(train_ngrams, min_count=min_count)
+    train_all_vecs = docs2bofs(train_ngrams, vocabulary)
+    test_all_vecs = docs2bofs(test_ngrams, vocabulary)
 
   # Normalize?
   if args.normalize:
@@ -90,7 +95,8 @@ def main():
 
   # Evaluate this classifier on all responses.
   print('Evaluate the classifier on all responses')
-  clf = cv_and_fit(train_all_vecs, train_all_labels, fit_intercept=False)
+  clf = LogitCV(Cs=[10**i for i in range(-2, 3)], fit_intercept=False, cv=2, dual=np.less(*train_all_vecs.shape), solver='liblinear', n_jobs=-1, random_state=0) 
+  clf.fit(train_all_vecs, train_all_labels)
   print('\tTrain acc: ', clf.score(train_all_vecs, train_all_labels))
   print('\tTest acc: ', clf.score(test_all_vecs, test_all_labels))
 

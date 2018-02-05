@@ -2,6 +2,12 @@ import csv
 import json
 
 
+### SARC Directory Paths ###
+SARC_DATA = '/n/fs/nlpdatasets/SARC/2.0/'
+SARC_MAIN = SARC_DATA + 'main/'
+SARC_POL = SARC_DATA + 'pol/'
+
+
 def load_sarc_responses(train_file, test_file, comment_file, lower=True):
   '''loads SARC data from csv files
   Args:
