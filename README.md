@@ -10,6 +10,6 @@ If you find this code useful please cite the following:
     @inproceedings{khodak2018large,
       title={A Large Self-Annotated Corpus for Sarcasm},
       author={Khodak, Mikhail and Saunshi, Nikunj and Vodrahalli, Kiran},
-      booktitle={To Appear in the Proceedings of the Linguistc Resource and Evaluation Conference (LREC)},
+      booktitle={Proceedings of the Linguistic Resource and Evaluation Conference (LREC)},
       year={2018}
     }
