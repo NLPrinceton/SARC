@@ -1,7 +1,7 @@
 # SARC
-Evaluation code for the Self-Annotated Reddit Corpus.
-  * https://arxiv.org/abs/1704.05579 (Manuscript)
-  * http://nlp.cs.princeton.edu/SARC/2.0/ (Dataset)
+Evaluation code for the Self-Annotated Reddit Corpus (SARC).
+  * [LREC Paper](http://www.lrec-conf.org/proceedings/lrec2018/pdf/160.pdf)
+  * [SARC Files](http://nlp.cs.princeton.edu/SARC/2.0/)
   
 Dependencies: NLTK, scikit-learn, text_embedding.
 
