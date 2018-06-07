@@ -7,7 +7,7 @@ Dependencies: NLTK, scikit-learn, text_embedding.
 
 If you find this code useful please cite the following:
 
-    @inproceedings{khodak2018large,
+    @inproceedings{khodak2018corpus,
       title={A Large Self-Annotated Corpus for Sarcasm},
       author={Khodak, Mikhail and Saunshi, Nikunj and Vodrahalli, Kiran},
       booktitle={Proceedings of the Linguistic Resource and Evaluation Conference (LREC)},
