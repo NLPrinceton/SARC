@@ -7,17 +7,13 @@ from text_embedding.vectors import *
 from SARC.utils import *
 
 
-# NOTE: Set necessary embedding path here
-VECTORFILES[('Amazon', 'GloVe', 1600)] = '/n/fs/nlpdatasets/AmazonProductData/amazon_glove1600.txt'
-
-
 def parse():
   parser = argparse.ArgumentParser()
   parser.add_argument('dataset', help='pol or main', type=str)
-  parser.add_argument('--n', default=1, help='Number of grams', type=int)
+  parser.add_argument('-n', '--n', default=1, help='Number of grams', type=int)
   parser.add_argument('--min_count', default=1, help='Min count', type=int)
-  parser.add_argument('--embedding', default='CC_GloVe_300',
-                      help='corpus_objective_dimension', type=str)
+  parser.add_argument('--embedding', default=CCGLOVE,
+                      help='embedding file', type=str)
   parser.add_argument('--weights', default=None,
                       help='weights to use for ngrams (e.g. sif, None)', type=str)
   parser.add_argument('-norm', '--normalize', action='store_true',
@@ -66,16 +62,13 @@ def main():
   # Bongs or embeddings.
   if args.embed:
     print('Create embeddings')
-    corpus, objective, dimension = (args.embedding).split('_')
-    dimension = int(dimension)
     weights = None
     if args.weights == 'sif':
       weights = sif_weights(train_all_docs_tok, 1E-3)
     if args.weights == 'snif':
       weights = sif_weights(train_all_docs_tok, 1E-3)
       weights = {f: 1-w for f, w in weights.items()}
-    w2v = vocab2vecs({word for doc in train_all_docs_tok+test_all_docs_tok for word in doc}, 
-                     corpus=corpus, objective=objective, dimension=dimension)
+    w2v = vocab2vecs({word for doc in train_all_docs_tok+test_all_docs_tok for word in doc}, vectorfile=args.embedding)
     train_all_vecs = docs2vecs(train_all_docs_tok, f2v=w2v, weights=weights)
     test_all_vecs = docs2vecs(test_all_docs_tok, f2v=w2v, weights=weights)
   else:
