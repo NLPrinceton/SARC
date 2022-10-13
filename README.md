@@ -1,4 +1,22 @@
 # SARC
+A fork of [NLPrinceton / SARC](https://github.com/NLPrinceton/SARC).
+
+## Project Setup
+1. [Download the dataset.](https://nlp.cs.princeton.edu/SARC/2.0/). Create a folder named `dataset` that is structured like this:
+   ``` 
+   dataset/
+   ├─ main/
+   |   ├─ comments.json
+   |   ├─ test-balanced.csv
+   |   └─ train-balanced.csv
+   └─ pol/
+      ├─ comments.json
+      ├─ test-balanced.csv
+      └─ train-balanced.csv
+   ``` 
+2. Put the `dataset` folder at this repo's root directory.
+
+## Original Readme
 Evaluation code for the Self-Annotated Reddit Corpus (SARC).
   * [LREC Paper](http://www.lrec-conf.org/proceedings/lrec2018/pdf/160.pdf)
   * [SARC Files](http://nlp.cs.princeton.edu/SARC/2.0/)
