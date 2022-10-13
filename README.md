@@ -15,6 +15,7 @@ A fork of [NLPrinceton / SARC](https://github.com/NLPrinceton/SARC).
       └─ train-balanced.csv
    ``` 
 2. Put the `dataset` folder at this repo's root directory.
+3. Still at the repo's root direrctory, run `git submodule add https://github.com/NLPrinceton/text_embedding.git`. This is one of the dependencies to create bag-of-n-grams (bong).
 
 ## Original Readme
 Evaluation code for the Self-Annotated Reddit Corpus (SARC).

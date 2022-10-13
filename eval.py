@@ -4,7 +4,7 @@ from sklearn.linear_model import LogisticRegressionCV as LogitCV
 from sklearn.preprocessing import normalize
 from text_embedding.features import *
 from text_embedding.vectors import *
-from SARC.utils import *
+from utils import *
 
 
 def parse():
