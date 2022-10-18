@@ -15,7 +15,7 @@ A fork of [NLPrinceton / SARC](https://github.com/NLPrinceton/SARC).
       └─ train-balanced.csv
    ``` 
 2. Put the `dataset` folder at this repo's root directory.
-3. Still at the repo's root directory, run `git submodule add https://github.com/NLPrinceton/text_embedding.git`. This is one of the dependencies to create bag-of-n-grams (bong).
+3. Still at the repo's root directory, run `git submodule update --init`. This is one of the dependencies to create bag-of-n-grams (bong).
 4. If you want to use word embedding instead of bong, download [1600-dimensional Amazon GloVe embeddings](http://nlp.cs.princeton.edu/DisC/amazon_glove1600.txt.bz2) (NOTE: 2.6 GB compressed, 8.7 GB uncompressed). Then put the extracted .txt file inside the `dataset` folder.
 5. Run one of the following commands: (<tt>$EMBEDDING</tt> is the file of downloaded GloVe embeddings)
 
