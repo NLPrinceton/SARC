@@ -22,7 +22,7 @@ def load_sarc_responses(train_file, test_file, comment_file, lower=True):
     train_labels: list of labels for responses for all sequences.
   '''
 
-  with open(comment_file, 'r', encoding='utf8') as f:
+  with open(comment_file, 'r', encoding='latin-1') as f:
     comments = json.load(f)
 
   train_docs = {'ancestors': [], 'responses': []}

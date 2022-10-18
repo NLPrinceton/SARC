@@ -1,5 +1,10 @@
 import argparse
+import string
+
 import nltk
+nltk.download('stopwords')
+from nltk.corpus import  stopwords
+from nltk.stem import WordNetLemmatizer
 from sklearn.linear_model import LogisticRegressionCV as LogitCV
 from sklearn.preprocessing import normalize
 from text_embedding.features import *
@@ -54,8 +59,8 @@ def main():
 
   # Train a classifier on all responses in training data. We will later use this
   # classifier to determine for every sequence which of the 2 responses is more sarcastic.
-  train_all_docs_tok = tokenize(train_docs[0] + train_docs[1])
-  test_all_docs_tok = tokenize(test_docs[0] + test_docs[1])
+  train_all_docs_tok = preprocessing(tokenize(train_docs[0] + train_docs[1]))
+  test_all_docs_tok = preprocessing(tokenize(test_docs[0] + test_docs[1]))
   train_all_labels = np.array(train_labels[0] + train_labels[1])
   test_all_labels = np.array(test_labels[0] + test_labels[1])
 
@@ -110,7 +115,33 @@ def main():
   print('\tTrain acc: ', (train_pred_labels == train_expect_labels).sum() / train_pred_labels.shape[0])
   print('\tTest acc: ', (test_pred_labels == test_expect_labels).sum() / test_pred_labels.shape[0])
 
+def preprocessing(document):
+  preprocessed = []
+  for doc in document:
+    # preprocessed.append(lemmatize(rm_punctuation(rm_stopwords(doc))))
+    # preprocessed.append(rm_stopwords(doc))
+    # preprocessed.append(rm_punctuation(doc))
+    preprocessed.append(lemmatize(doc))
+
+  return preprocessed
+
+def rm_stopwords(documents):
+  stop_words = set(stopwords.words("english"))
+  filtered = [word for word in documents if word not in stop_words]
+  return filtered
+
+def rm_punctuation(documents):
+  punctuation = string.punctuation
+  filtered = [word for word in documents if word not in punctuation]
+  return filtered
+
+def lemmatize(documents):
+  lemmatizer = WordNetLemmatizer()
+  lemmatized = [lemmatizer.lemmatize(word, pos='v') for word in documents]
+  return lemmatized
 
 if __name__ == '__main__': 
   
   main()
+
+
