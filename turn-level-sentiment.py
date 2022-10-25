@@ -42,13 +42,15 @@ def main():
 
     # TODO steps for sentiment analysis using VADER:
     # 1. Do sentiment analysis using built-in libraries.
-    for sentence in test_docs[0]:
+    for idx, sentence in enumerate(test_docs[0]):
         print(sentence)
         sentiment_analyzer = SentimentIntensityAnalyzer()
         score = sentiment_analyzer.polarity_scores(sentence)
+        print('is_sarcastic: {0}'.format(test_labels[idx][0]))
         print('neg: {0}, neu: {1}, pos: {2}'
               .format(score['neg'], score['neu'], score['pos']),
               end='\n')
+        print()
     
     # 2. Treat the sentiment results (values of neg, neu, pos) as learning features
     # 3. Use supervised learning algorithm to train and test the data
