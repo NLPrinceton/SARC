@@ -1,4 +1,5 @@
 from eval import parse, preprocessing
+from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.linear_model import LogisticRegressionCV as LogitCV
 from text_embedding.features import *
 from text_embedding.vectors import *
@@ -38,7 +39,12 @@ def main():
     train_all_labels = np.array(train_labels[0] + train_labels[1])
     test_all_labels = np.array(test_labels[0] + test_labels[1])
 
-    # create baf of n-grams
+    # TODO steps for sentiment analysis using VADER:
+    # 1. Do sentiment analysis using built-in libraries.
+    # 2. Treat the sentiment results (values of neg, neu, pos) as learning features
+    # 3. Use supervised learning algorithm to train and test the data
+
+    # create bag of n-grams
     print('Create bongs')
     n = args.n
     min_count = args.min_count
