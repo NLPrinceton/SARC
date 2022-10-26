@@ -4,12 +4,16 @@ import string
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import  stopwords
+from nltk.corpus import WordNetCorpusReader
 from nltk.stem import WordNetLemmatizer
 from sklearn.linear_model import LogisticRegressionCV as LogitCV
 from sklearn.preprocessing import normalize
 from text_embedding.features import *
 from text_embedding.vectors import *
 from utils import *
+
+## WordNet Affect
+from WNAffect import wnaffect
 
 
 def parse():
@@ -36,6 +40,8 @@ def main():
     SARC = SARC_POL
   elif args.dataset.lower() == 'main':
     SARC = SARC_MAIN
+
+  print(emotion_extraction())
 
   train_file = SARC+'train-balanced.csv'
   test_file = SARC+'test-balanced.csv'
@@ -139,6 +145,11 @@ def lemmatize(documents):
   lemmatizer = WordNetLemmatizer()
   lemmatized = [lemmatizer.lemmatize(word, pos='v') for word in documents]
   return lemmatized
+
+def emotion_extraction():
+  wna = wnaffect.WNAffect('wordnet-1.6', 'wn-domains-3.2')
+  emo = wna.get_emotion('angry', 'JJ')
+  return emo
 
 if __name__ == '__main__': 
   

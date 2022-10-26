@@ -1,0 +1,160 @@
+Installation instructions for WordNet 1.6 database package.
+
+1. Manifest
+
+When the WordNet database package is unbundled you should have the
+following files and subdirectories in this directory:
+
+	CHANGES		changes to WordNet since version 1.5
+	INSTALL		this file
+	LICENSE		WordNet copyright and license agreement
+	Makefile	Makefile for WordNet 1.6 database package
+	README		README file for WordNet system
+	README.ml	Information about the user mailing list
+	README.tcltk	Information about downloading Tcl/Tk
+	bin		precompiled binaries for some Unix platforms
+	dict		WordNet 1.6 database files
+	include		WordNet source code header files
+	lib		precompiled WordNet library for some Unix platforms
+	man		WordNet Reference Manual (man pages)
+	src		source code for WordNet library and interfaces
+
+2. Makefile 
+
+To prepare WordNet for installation on your systems you must edit the
+Makefile.  Following is a brief description of the variables used for
+a binary installation.  See the Makefile for more information about
+each variable, and additional variables that must be set to compile
+the WordNet source code.
+
+	PLATFORM	Computer platform for binary installation.
+			The default is "sunos".
+
+	WN_ROOT		Root of WordNet installation directory hierarchy.
+			The default is /usr/local/wordnet1.6
+
+	WN_BINDIR	Directory for installation of binaries.
+			Default is WN_ROOT/bin.
+
+	WN_DICTDIR	Directory for installation of WordNet database.
+			Default is WN_ROOT/dict
+
+	INSTALLCMD	Command to use to install database files.
+			Default is "cp".  Setting this to "mv" moves
+			the database into the WN_DICTDIR directory
+			instead of copying it.  This saves disk space
+			by keeping only one copy of the database around.
+
+	INSTALLFLAGS	Defaults to "-p" for use with "INSTALLCMD=cp".
+			Set to "" if using "INSTALLCMD=mv".
+		
+	WN_LIBDIR	Directory for installation of WordNet library
+			libwn.a.  Defaults to WN_ROOT/lib
+
+	WN_INCDIR	Directory for installation of WordNet header
+			files.  Defaults to WN_ROOT/include.
+
+	WN_MANDIR	Directory for installation of WordNet man pages.
+			Default is WN_ROOT/man.
+
+3. Binary Installation
+
+To install the WordNet database, precompiled browsers, library, header
+files and documentation, first edit the Makefile as indicated above.
+Then type:
+
+	make BinWorld
+
+4. Compiling the WordNet Source Code
+
+This version of the WordNet window-based browser is written in Tcl/Tk.
+If you want to compile the browser on your system, you must have the
+Tcl 7.6 and Tk 4.2 libraries installed on your system.  If you do not
+have these versions of Tcl/Tk, read the file README.tcltk for
+information about downloading and installing it.
+
+To compile the WordNet source code, first read the instructions in the
+Makefile and edit it accordingly.  The type:
+
+	make SrcWorld
+
+Due to the many different computer platforms and specifics of each
+Unix site, it may take some trial and error to get the source code to
+compile on your platform.  WordNet is provided precompiled for all the
+platforms that we at Princeton have access to.  If you are having
+trouble compiling WordNet on some other platform, you should speak to
+your local system administrator and NOT send mail to the Cognitive
+Science Laboratory.  We do not have the staff or resources to support
+this activity.
+
+5. Using WordNet
+
+5.1 Environment Variables
+
+The WordNet database can be accessed with a command line interface,
+'wn', or a window-based browser, 'wnb'.  Both are installed in the
+WN_BINDIR directory indicated in the Makefile.  If you install these
+commands in the default location (/usr/local/wordnet1.6/bin), you must
+set your PATH environment variable to contain this path.
+
+The browsers have several ways of finding the WordNet database files.
+If neither the WNHOME nor WNSEARCHDIR environment variables are set,
+it expects to find the database files in /usr/local/wordnet1.6/dict.
+If WNSEARCHDIR is set, it looks in that directory.  If WNHOME is set,
+the search code looks in WNHOME/dict.
+
+If you install all of WordNet in a directory tree other than
+/usr/local/wordnet1.6, it is best to set WNHOME to that location and
+not set WNSEARCHDIR.  If you install the database files in a location
+outside of both the default and WNHOME hierarchies (perhaps because
+there isn't enough disk space to put everything together), you should
+set WNSEARCHDIR to the directory in which the database is installed,
+and WNHOME to the root directory for the rest of the package.
+
+The browser 'wnb' uses several resource files.  It expects to find
+them in /usr/local/wordnet1.6/lib/wnres.  If WNHOME is set, it looks
+in WNHOME/lib/wnres.
+
+If you install the manual pages in a directory that is not already in
+your MANPATH, you must add that directory to MANPATH in order for the
+'man' command to find the WordNet manual pages.
+
+5.2 Running the WordNet Browsers
+
+The command 'wn' runs the command line interface.  This is usually
+used from other applications or shell scripts, or by users who do not
+have access to a windowing system. See the manual page 'wn' for
+details.
+
+The command 'wnb' runs the window-based browser interface.  See the
+manual page 'wnb' for details.
+
+6. Cleaning Up
+
+6.1 Removing the Extra Copy of the Database Files
+
+If you do not set INSTALLCMD to "mv", when WordNet is installed the
+database files are copied to WN_DICTDIR.  To save disk space, after
+installation (and testing to make sure all is well), you can remove the
+database files from the download directory with the command:
+
+	make cleandbfiles
+
+6.2 Uninstalling WordNet
+
+You can remove the various pieces of WordNet from the installation
+directories with the command:
+	
+	make uninstall
+
+Note that this does not attempt to remove directories, and does not
+remove the database files.  You must remove the database files "by
+hand".  This is done as a precaution, since downloading the database
+again, should it be inadvertently removed, is a real pain.
+
+6.3 Saving Disk Space
+
+If disk space is at a premium, and you are not doing research or
+development using WordNet, you can remove the files "index.sense" and
+"index.gloss" from the database installation directory.  These files
+are quite large, and are not used by the WordNet browsers.

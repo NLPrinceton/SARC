@@ -1,0 +1,121 @@
+Summary of changes made to WordNet between versions 1.5 and 1.6
+
+The most significant change between WordNet 1.5 and 1.6 is the
+introduction of a new window based WordNet Browser application. The
+new program is written in Tcl/Tk, which runs on Unix, PC and Macintosh
+platforms.  Using Tcl/Tk for the user interface and the WordNet
+library functions for accessing the database files enables us to
+provide a common, uniform user interface on all supported platforms.
+
+In developing the new browser, we stepped back from the old, familiar
+one and, with the wondeful insight of our student programmer, David
+Slomin, redesigned the look and features provided.  While most users
+complimented us on the ease of use of the "old" WordNet, we feel that
+the new interface is easier yet, and incorporates additional features
+that users have been asking for.
+
+A summary of the changes:
+
+	New Tcl/Tk based interface that is uniform on all platforms.
+	
+	New options:
+		show synset location in database file (synset offset)
+		show lexical file information
+		show sense numbers for words in synsets
+		user selectable fonts and sizes
+	
+	Functional Changes:
+		new "Overview" of all senses comes up first
+		substring search (grep) is now a "File" option
+			- not tied to word in syntactic category
+		new search "History"
+		new print search results
+		improved save search results
+		keyboard shortcuts
+		improved "Help"
+
+
+With this release of WordNet we have added a package that contains
+information about mapping WordNet 1.5 noun senses to their
+corresponding 1.6 senses.  This package is intended primarily to
+assist users who have semantically tagged text to WordNet 1.5 senses,
+and who wish to upgrade to the 1.6 database.
+
+The WordNet Reference Manual is provided in the form of manual pages.
+In this release, we have included the documentation as nroff source,
+ASCII formatted files, Postscript files, and HTML files.
+
+There have been many smaller changes in all parts of the WordNet
+system since the last release.  The summary information below is
+mainly for developers.
+
+WordNet database:
+
+	added tagged_cnt field to index file
+
+	added verb group pointer type
+
+	index.sense file: added number of tags for each sense
+
+	removed list of filenames from database "data" files
+
+	use DBLICENSE_SIZE to get starting offset of first synset 
+		in each data file
+
+	frequency counts (polysemy) now based on # of WN senses, not Collins
+	
+	new gloss index (index.gloss) file 
+	
+	example sentences for verb senses
+
+
+Prolog version of the database:
+
+	added new file wn_vgp.pl -> verb group pointers
+
+	added field to end of w_s.pl file -> 
+		1 : sense is tagged
+		0 : sense is tagged
+
+	changed wn_at.pl to be semantic relation rather than lexical
+
+
+WordNet Library:
+
+	new WNDBVERSION environment variable that indicates which
+		version of the database to work on.  Defaults to
+		"1.6".  If set to "1.5", the new Browser and WordNet
+		library can be used with the WordNet 1.5 database
+		files.
+
+	new WNHOME environment variable.  If "old" WNSEARCHDIR is set,
+		it uses that.  If not, and WHOME is set, library code 
+		looks for database files in WNHOME/dict.  Otherwise
+		the default for your computer platform is used.
+	
+	moved SenseCount, OutSenseCount to new "wnresults" data structure
+
+	removed "datastart" variable (use DBLICENSE_SIZE instead)
+
+	new OVERVIEW search
+
+	WNGREP substring search now done in (fast) library code, and
+		not with 'wngrep' system call
+
+	example sentences for some verb senses
+
+	new VERBGROUP searches for grouping verb senses by similarity
+		of meaning
+
+	Synset structure changed:
+		"wnsense" is gone
+		"lexid" is old "wnsense" (lexicographer id)
+		"wnsns" is  WordNet sense number
+
+	Index structure:
+		added "tagged_cnt" field
+
+	new SnsIndex structure for parsed "sense index" entry
+
+	
+

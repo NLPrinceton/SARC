@@ -1,0 +1,46 @@
+
+Instructions for Downloading and Installing Tcl and Tk
+
+1.  You need Tcl version 7.6p2 and Tk version 4.2p2 to build the
+graphical WordNet browser (not any later or earlier versions).  If you
+don't want the graphical interface, you can skip reading the rest of
+this file.  If you have Tcl/Tk, but are not sure of the version, do
+step 2.  Otherwise, skip to 3.
+
+2.  You can check your current version of Tcl by running "tclsh" and
+typing "info patchlevel" at the first prompt.  If it responds
+correctly (7.6p2) then both your Tcl and Tk versions are correct for
+WordNet, and you can skip the rest of this file.  You can exit tclsh
+by typing "exit".
+
+3.  You can download the correct versions of Tcl and Tk from for free
+from Sun Microsystems at the following addresses:
+
+   ftp://ftp.sunlabs.com/pub/tcl/tcl7.6p2.tar.gz
+   ftp://ftp.sunlabs.com/pub/tcl/tk4.2p2.tar.gz
+
+4.  Unarchive the files in the usual manner (filename is the name of
+the package):
+
+   gzip -d filename.tar.gz
+   tar -xf filename.tar
+   rm filename.tar
+
+5.  First install Tcl.  Be sure to replace INSTALLPATH below with the
+full path to the directory in which you want to install Tcl.  We
+recommend using "/usr/local"; if you choose a different location, you
+will have to modify the WordNet makefile later in the installation.
+
+   cd tcl7.6/unix
+   ./configure --disable-load --prefix=INSTALLPATH
+   make
+   make install
+
+6.  Now install Tk.  Again, don't forget to replace INSTALLPATH with
+the target directory for Tk, and again we recommend "/usr/local".
+
+   cd ../../tk4.2/unix
+   ./configure --prefix=INSTALLPATH
+   make
+   make install
+

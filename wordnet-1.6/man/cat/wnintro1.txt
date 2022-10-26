@@ -1,0 +1,68 @@
+Table of Contents
+
+NAME
+
+wnintro - WordNet user commands
+
+SYNOPSIS
+
+escort - search semantic concordances for sentences containing semantic tags
+
+wn - command line interface to WordNet database
+
+wnb - window based WordNet browser
+
+DESCRIPTION
+
+This section of the WordNet Reference Manual contains manual pages that
+describe commands available with the various WordNet system packages.
+
+The WordNet interfaces wn(1WN) and wnb(1WN) allow the user to search the
+WordNet database and display the information textually. escort(1WN) is a
+window based browser for searching the semantic concordances.
+
+ENVIRONMENT VARIABLES
+
+WNHOME
+     Base directory for WordNet. Unix default is /usr/local/wordnet1.6 , PC
+     default is C:\wn16 , Macintosh default is : .
+WNSEARCHDIR
+     Directory in which the WordNet database has been installed. Unix
+     default is WNHOME/dict , PC default is WNHOME\dict , Macintosh default
+     is :Database .
+WNDBVERSION
+     Indicates which format the WordNet database files in WNSEARCHDIR are
+     in. The default is 1.6 . Setting WNDBVERION to 1.5 allows the 1.6
+     commands to work with the 1.5 database files.
+
+SEE ALSO
+
+wnintro(3WN) , wnintro(5WN) , wnintro(7WN) .
+
+Miller, G. A. (1990), ed. "WordNet: An On-Line Lexical Database" .
+International Journal of Lexicography, Volume 3, Number 4.
+
+Miller, G. A., et al. (1990, 1993). "Five Papers on WordNet" . Cognitive
+Science Laboratory Report 43. (Available from
+ftp://ftp.cogsci.princeton.edu/wordnet/ .)
+
+Fellbaum, C. (1998), ed. "WordNet: An Electronic Lexical Database" . MIT
+Press, Cambridge, MA.
+
+AVAILABILITY
+
+WordNet has a World Wide Web site at http://www.cogsci.princeton.edu/~wn/ .
+From this web site users can learn about the WordNet project, run several
+different interfaces to the WordNet database, and download various WordNet
+system packages and "Five Papers on WordNet" .
+
+----------------------------------------------------------------------------
+
+Table of Contents
+
+   * NAME
+   * SYNOPSIS
+   * DESCRIPTION
+   * ENVIRONMENT VARIABLES
+   * SEE ALSO
+   * AVAILABILITY

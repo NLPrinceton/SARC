@@ -1,0 +1,68 @@
+Table of Contents
+
+NAME
+
+bin_search, copyfile, replace_line, insert_line
+
+SYNOPSIS
+
+char *bin_search(char *key, FILE *fp);
+
+void copyfile(FILE *fromfp, FILE *tofp);
+
+char *replace_line(char *new_line, char *key, FILE *fp);
+
+DESCRIPTION
+
+The WordNet library contains several general purpose functions for
+performing a binary search and modifying sorted files.
+
+bin_search() is the primary binary search algorithm to search for key as the
+first item on a line in the file pointed to by fp . The delimiter between
+the key and the rest of the fields on the line, if any, must be a space. A
+pointer to a static variable containing the entire line is returned. NULL is
+returned if a match is not found.
+
+The remaining functions are not used by WordNet, and are only briefly
+described.
+
+copyfile() copies the contents of one file to another.
+
+replace_line() replaces a line in a file having searchkey key with the
+contents of new_line . It returns the original line or NULL in case of
+error.
+
+insert_line() finds the proper place to insert the contents of new_line ,
+having searchkey key in the sorted file pointed to by fp . It returns NULL
+if a line with this searchkey is already in the file.
+
+NOTES
+
+The maximum length of key is 1024.
+
+The maximum line length in a file is 25K for Unix platforms, and 8K for the
+PC and Macintosh platforms.
+
+If there are no additional fields after the search key, the key must be
+followed by at least one space before the newline character.
+
+SEE ALSO
+
+morph(3WN) , wnsearch(3WN) , wnutil(3WN) , wnintro(5WN) .
+
+WARNINGS
+
+binsearch() returns a pointer to a static character buffer. The returned
+string should be copied by the caller if the results need to be saved, as a
+subsequent call will replace the contents of the static buffer.
+
+----------------------------------------------------------------------------
+
+Table of Contents
+
+   * NAME
+   * SYNOPSIS
+   * DESCRIPTION
+   * NOTES
+   * SEE ALSO
+   * WARNINGS

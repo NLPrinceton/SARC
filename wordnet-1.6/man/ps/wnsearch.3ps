@@ -1,0 +1,2974 @@
+%!PS-Adobe-1.0
+%%Creator: surprise:wn (Wordnet,221 Nassau)
+%%Title: stdin (ditroff)
+%%CreationDate: Wed Dec  3 14:10:50 1997
+%%EndComments
+% Start of psdit.pro -- prolog for ditroff translator
+% Copyright (c) 1985,1987 Adobe Systems Incorporated. All Rights Reserved. 
+% GOVERNMENT END USERS: See Notice file in TranScript library directory
+% -- probably /usr/lib/ps/Notice
+% RCS: $Header: psdit.pro,v 2.2 87/11/17 16:40:42 byron Rel $
+% Psfig RCSID $Header: psdit.pro,v 1.5 88/01/04 17:48:22 trevor Exp $
+
+/$DITroff 180 dict def $DITroff begin
+
+/DocumentInitState [ matrix currentmatrix currentlinewidth currentlinecap
+currentlinejoin currentdash currentgray currentmiterlimit ] cvx def
+
+%% Psfig additions
+/startFig {
+	/SavedState save def
+	userdict maxlength dict begin
+	currentpoint transform
+
+	DocumentInitState setmiterlimit setgray setdash setlinejoin setlinecap
+		setlinewidth setmatrix
+
+	itransform moveto
+
+	/ury exch def
+	/urx exch def
+	/lly exch def
+	/llx exch def
+	/y exch 72 mul resolution div def
+	/x exch 72 mul resolution div def
+	
+	currentpoint /cy exch def /cx exch def
+
+	/sx x urx llx sub div def 	% scaling for x
+	/sy y ury lly sub div def	% scaling for y
+
+	sx sy scale			% scale by (sx,sy)
+
+	cx sx div llx sub
+	cy sy div ury sub translate
+	
+	/DefFigCTM matrix currentmatrix def
+
+	/initmatrix {
+		DefFigCTM setmatrix
+	} def
+	/defaultmatrix {
+		DefFigCTM exch copy
+	} def
+
+	/initgraphics {
+		DocumentInitState setmiterlimit setgray setdash 
+			setlinejoin setlinecap setlinewidth setmatrix
+		DefFigCTM setmatrix
+	} def
+
+	/showpage {
+		initgraphics
+	} def
+
+} def
+% Args are llx lly urx ury (in figure coordinates)
+/clipFig {
+	currentpoint 6 2 roll
+	newpath 4 copy
+	4 2 roll moveto
+	6 -1 roll exch lineto
+	exch lineto
+	exch lineto
+	closepath clip
+	newpath
+	moveto
+} def
+% doclip, if called, will always be just after a `startfig'
+/doclip { llx lly urx ury clipFig } def
+/endFig {
+	end SavedState restore
+} def
+/globalstart {
+	% Push details about the enviornment on the stack.
+	fontnum fontsize fontslant fontheight 
+	% firstpage 
+	mh my resolution slotno currentpoint 
+	pagesave restore gsave 
+} def
+/globalend {
+	grestore moveto
+	/slotno exch def /resolution exch def /my exch def
+	/mh exch def 
+	% /firstpage exch def
+	/fontheight exch def
+	/fontslant exch def /fontsize exch def /fontnum exch def
+	F
+	/pagesave save def
+} def
+
+%% end XMOD additions
+
+/fontnum 1 def /fontsize 10 def /fontheight 10 def /fontslant 0 def
+/xi {0 72 11 mul translate 72 resolution div dup neg scale 0 0 moveto
+  /fontnum 1 def /fontsize 10 def /fontheight 10 def /fontslant 0 def F
+  /pagesave save def}def
+/PB{save /psv exch def currentpoint translate
+  resolution 72 div dup neg scale 0 0 moveto}def
+/PE{psv restore}def
+/m1 matrix def /m2 matrix def /m3 matrix def /oldmat matrix def
+/tan{dup sin exch cos div}bind def
+/point{resolution 72 div mul}bind def
+/dround	{transform round exch round exch itransform}bind def
+/xT{/devname exch def}def
+/xr{/mh exch def /my exch def /resolution exch def}def
+/xp{}def
+/xs{docsave restore end}def
+/xt{}def
+/xf{/fontname exch def /slotno exch def fontnames slotno get fontname eq not
+ {fonts slotno fontname findfont put fontnames slotno fontname put}if}def
+/xH{/fontheight exch def F}bind def
+/xS{/fontslant exch def F}bind def
+/s{/fontsize exch def /fontheight fontsize def F}bind def
+/f{/fontnum exch def F}bind def
+/F{fontheight 0 le {/fontheight fontsize def}if
+   fonts fontnum get fontsize point 0 0 fontheight point neg 0 0 m1 astore
+   fontslant 0 ne{1 0 fontslant tan 1 0 0 m2 astore m3 concatmatrix}if
+   makefont setfont .04 fontsize point mul 0 dround pop setlinewidth}bind def
+/X{exch currentpoint exch pop moveto show}bind def
+/N{3 1 roll moveto show}bind def
+/Y{exch currentpoint pop exch moveto show}bind def
+/S /show load def
+/ditpush{}def/ditpop{}def
+/AX{3 -1 roll currentpoint exch pop moveto 0 exch ashow}bind def
+/AN{4 2 roll moveto 0 exch ashow}bind def
+/AY{3 -1 roll currentpoint pop exch moveto 0 exch ashow}bind def
+/AS{0 exch ashow}bind def
+/MX{currentpoint exch pop moveto}bind def
+/MY{currentpoint pop exch moveto}bind def
+/MXY /moveto load def
+/cb{pop}def	% action on unknown char -- nothing for now
+/n{}def/w{}def
+/p{pop showpage pagesave restore /pagesave save def}def
+/abspoint{currentpoint exch pop add exch currentpoint pop add exch}def
+/dstroke{currentpoint stroke moveto}bind def
+/Dl{2 copy gsave rlineto stroke grestore rmoveto}bind def
+/arcellipse{oldmat currentmatrix pop
+ currentpoint translate 1 diamv diamh div scale /rad diamh 2 div def
+ rad 0 rad -180 180 arc oldmat setmatrix}def
+/Dc{gsave dup /diamv exch def /diamh exch def arcellipse dstroke 
+    grestore diamh 0 rmoveto}def
+/De{gsave /diamv exch def /diamh exch def arcellipse dstroke
+    grestore diamh 0 rmoveto}def
+/Da{currentpoint /by exch def /bx exch def /fy exch def /fx exch def
+   /cy exch def /cx exch def /rad cx cx mul cy cy mul add sqrt def
+   /ang1 cy neg cx neg atan def /ang2 fy fx atan def cx bx add cy by add
+   2 copy rad ang1 ang2 arcn stroke exch fx add exch fy add moveto}def
+/Barray 200 array def % 200 values in a wiggle
+/D~{mark}def
+/D~~{counttomark Barray exch 0 exch getinterval astore /Bcontrol exch def pop
+ /Blen Bcontrol length def Blen 4 ge Blen 2 mod 0 eq and
+ {Bcontrol 0 get Bcontrol 1 get abspoint /Ycont exch def /Xcont exch def
+  Bcontrol 0 2 copy get 2 mul put Bcontrol 1 2 copy get 2 mul put
+  Bcontrol Blen 2 sub 2 copy get 2 mul put
+  Bcontrol Blen 1 sub 2 copy get 2 mul put
+  /Ybi /Xbi currentpoint 3 1 roll def def 0 2 Blen 4 sub
+  {/i exch def
+   Bcontrol i get 3 div Bcontrol i 1 add get 3 div
+   Bcontrol i get 3 mul Bcontrol i 2 add get add 6 div
+   Bcontrol i 1 add get 3 mul Bcontrol i 3 add get add 6 div
+   /Xbi Xcont Bcontrol i 2 add get 2 div add def
+   /Ybi Ycont Bcontrol i 3 add get 2 div add def
+   /Xcont Xcont Bcontrol i 2 add get add def
+   /Ycont Ycont Bcontrol i 3 add get add def
+   Xbi currentpoint pop sub Ybi currentpoint exch pop sub rcurveto
+  }for dstroke}if}def
+end
+/ditstart{$DITroff begin
+ /nfonts 60 def			% NFONTS makedev/ditroff dependent!
+ /fonts[nfonts{0}repeat]def
+ /fontnames[nfonts{()}repeat]def
+/docsave save def
+}def
+
+% character outcalls
+/oc {/pswid exch def /cc exch def /name exch def
+   /ditwid pswid fontsize mul resolution mul 72000 div def
+   /ditsiz fontsize resolution mul 72 div def
+   ocprocs name known{ocprocs name get exec}{name cb}
+   ifelse}def
+/fractm [.65 0 0 .6 0 0] def
+/fraction
+ {/fden exch def /fnum exch def gsave /cf currentfont def
+  cf fractm makefont setfont 0 .3 dm 2 copy neg rmoveto
+  fnum show rmoveto currentfont cf setfont(\244)show setfont fden show 
+  grestore ditwid 0 rmoveto} def
+/oce {grestore ditwid 0 rmoveto}def
+/dm {ditsiz mul}def
+/ocprocs 50 dict def ocprocs begin
+(14){(1)(4)fraction}def
+(12){(1)(2)fraction}def
+(34){(3)(4)fraction}def
+(13){(1)(3)fraction}def
+(23){(2)(3)fraction}def
+(18){(1)(8)fraction}def
+(38){(3)(8)fraction}def
+(58){(5)(8)fraction}def
+(78){(7)(8)fraction}def
+(sr){gsave .05 dm .16 dm rmoveto(\326)show oce}def
+(is){gsave 0 .15 dm rmoveto(\362)show oce}def
+(->){gsave 0 .02 dm rmoveto(\256)show oce}def
+(<-){gsave 0 .02 dm rmoveto(\254)show oce}def
+(==){gsave 0 .05 dm rmoveto(\272)show oce}def
+end
+% DIThacks fonts for some special chars
+50 dict dup begin
+/FontType 3 def
+/FontName /DIThacks def
+/FontMatrix [.001 0.0 0.0 .001 0.0 0.0] def
+/FontBBox [-220 -280 900 900] def% a lie but ...
+/Encoding 256 array def
+0 1 255{Encoding exch /.notdef put}for
+Encoding
+ dup 8#040/space put %space
+ dup 8#110/rc put %right ceil
+ dup 8#111/lt put %left  top curl
+ dup 8#112/bv put %bold vert
+ dup 8#113/lk put %left  mid curl
+ dup 8#114/lb put %left  bot curl
+ dup 8#115/rt put %right top curl
+ dup 8#116/rk put %right mid curl
+ dup 8#117/rb put %right bot curl
+ dup 8#120/rf put %right floor
+ dup 8#121/lf put %left  floor
+ dup 8#122/lc put %left  ceil
+ dup 8#140/sq put %square
+ dup 8#141/bx put %box
+ dup 8#142/ci put %circle
+ dup 8#143/br put %box rule
+ dup 8#144/rn put %root extender
+ dup 8#145/vr put %vertical rule
+ dup 8#146/ob put %outline bullet
+ dup 8#147/bu put %bullet
+ dup 8#150/ru put %rule
+ dup 8#151/ul put %underline
+ pop
+/DITfd 100 dict def
+/BuildChar{0 begin
+ /cc exch def /fd exch def
+ /charname fd /Encoding get cc get def
+ /charwid fd /Metrics get charname get def
+ /charproc fd /CharProcs get charname get def
+ charwid 0 fd /FontBBox get aload pop setcachedevice
+ 40 setlinewidth
+ newpath 0 0 moveto gsave charproc grestore
+ end}def
+/BuildChar load 0 DITfd put
+%/UniqueID 5 def
+/CharProcs 50 dict def
+CharProcs begin
+/space{}def
+/.notdef{}def
+/ru{500 0 rls}def
+/rn{0 750 moveto 500 0 rls}def
+/vr{20 800 moveto 0 -770 rls}def
+/bv{20 800 moveto 0 -1000 rls}def
+/br{20 770 moveto 0 -1040 rls}def
+/ul{0 -250 moveto 500 0 rls}def
+/ob{200 250 rmoveto currentpoint newpath 200 0 360 arc closepath stroke}def
+/bu{200 250 rmoveto currentpoint newpath 200 0 360 arc closepath fill}def
+/sq{80 0 rmoveto currentpoint dround newpath moveto
+    640 0 rlineto 0 640 rlineto -640 0 rlineto closepath stroke}def
+/bx{80 0 rmoveto currentpoint dround newpath moveto
+    640 0 rlineto 0 640 rlineto -640 0 rlineto closepath fill}def
+/ci{355 333 rmoveto currentpoint newpath 333 0 360 arc
+    50 setlinewidth stroke}def
+
+/lt{20 -200 moveto 0 550 rlineto currx 800 2cx s4 add exch s4 a4p stroke}def
+/lb{20 800 moveto 0 -550 rlineto currx -200 2cx s4 add exch s4 a4p stroke}def
+/rt{20 -200 moveto 0 550 rlineto currx 800 2cx s4 sub exch s4 a4p stroke}def
+/rb{20 800 moveto 0 -500 rlineto currx -200 2cx s4 sub exch s4 a4p stroke}def
+/lk{20 800 moveto 20 300 -280 300 s4 arcto pop pop 1000 sub
+    currentpoint stroke moveto
+    20 300 4 2 roll s4 a4p 20 -200 lineto stroke}def
+/rk{20 800 moveto 20 300 320 300 s4 arcto pop pop 1000 sub
+    currentpoint stroke moveto
+    20 300 4 2 roll s4 a4p 20 -200 lineto stroke}def
+/lf{20 800 moveto 0 -1000 rlineto s4 0 rls}def
+/rf{20 800 moveto 0 -1000 rlineto s4 neg 0 rls}def
+/lc{20 -200 moveto 0 1000 rlineto s4 0 rls}def
+/rc{20 -200 moveto 0 1000 rlineto s4 neg 0 rls}def
+end
+
+/Metrics 50 dict def Metrics begin
+/.notdef 0 def
+/space 500 def
+/ru 500 def
+/br 0 def
+/lt 250 def
+/lb 250 def
+/rt 250 def
+/rb 250 def
+/lk 250 def
+/rk 250 def
+/rc 250 def
+/lc 250 def
+/rf 250 def
+/lf 250 def
+/bv 250 def
+/ob 350 def
+/bu 350 def
+/ci 750 def
+/bx 750 def
+/sq 750 def
+/rn 500 def
+/ul 500 def
+/vr 0 def
+end
+
+DITfd begin
+/s2 500 def /s4 250 def /s3 333 def
+/a4p{arcto pop pop pop pop}def
+/2cx{2 copy exch}def
+/rls{rlineto stroke}def
+/currx{currentpoint pop}def
+/dround{transform round exch round exch itransform} def
+
+end
+end
+/DIThacks exch definefont pop
+
+ditstart
+(psc)xT
+576 1 1 xr
+1(Times-Roman)xf 1 f
+2(Times-Italic)xf 2 f
+3(Times-Bold)xf 3 f
+4(Times-BoldItalic)xf 4 f
+5(Helvetica)xf 5 f
+6(Helvetica-Bold)xf 6 f
+7(Courier)xf 7 f
+8(Courier-Bold)xf 8 f
+9(Symbol)xf 9 f
+10(DIThacks)xf 10 f
+10 s
+1 f
+xi
+%%EndProlog
+
+%%Page: 1 1
+10 s 10 xH 0 xS 1 f
+576 384(WNSEARCH)N
+1038(\()X
+1078(3WN)X
+1265(\))X
+1965(WordNet)X
+9 f
+2264(\324)X
+1 f
+2355(Library)X
+2616(Functions)X
+3604(WNSEARCH)X
+4066(\()X
+4106(3WN)X
+4293(\))X
+3 f
+9 s
+576 768(NAME)N
+1 f
+10 s
+864 864(\256ndtheinfo,)N
+1299(\256ndtheinfo_ds,)X
+1845(is_de\256ned,)X
+2258(in_wn,)X
+2542(index_lookup,)X
+3066(getindex,)X
+3426(read_synset,)X
+3890(parse_synset,)X
+864 960(free_syns,)N
+1212(free_synset,)X
+1618(free_index,)X
+2002(traceptrs_ds,)X
+2430(do_trace)X
+3 f
+9 s
+576 1094(SYNOPSIS)N
+10 s
+864 1190(#include)N
+1172("wn.h")X
+864 1324(char)N
+9 f
+1040(*)X
+1042(*)X
+3 f
+(\256ndtheinfo\(char)S
+9 f
+1657(*)X
+1659(*)X
+3 f
+(searchstr,)S
+2056(int)X
+2169(pos,)X
+2324(int)X
+2437(ptr_type,)X
+2771(int)X
+2884(sense_num\);)X
+864 1458(SynsetPtr)N
+1218(\256ndtheinfo_ds\(char)X
+9 f
+1908(*)X
+1910(*)X
+3 f
+(searchstr,)S
+2307(int)X
+2420(pos,)X
+2575(int)X
+2688(ptr_type,)X
+3022(int)X
+3135(sense_num)X
+3528(\);)X
+864 1592(unsigned)N
+1189(long)X
+1355(is_de\256ned\(char)X
+9 f
+1899(*)X
+1901(*)X
+3 f
+(searchstr,)S
+2298(int)X
+2411(pos\);)X
+864 1726(unsigned)N
+1189(int)X
+1302(in_wn\(char)X
+9 f
+1713(*)X
+1715(*)X
+3 f
+(searchstr,)S
+2112(int)X
+2225(pos\);)X
+864 1860(IndexPtr)N
+1191(index_lookup\(char)X
+9 f
+1854(*)X
+1856(*)X
+3 f
+(searchstr,)S
+2253(int)X
+2366(pos\);)X
+864 1994(IndexPtr)N
+1191(getindex\(char)X
+9 f
+1683(*)X
+1685(*)X
+3 f
+(searchstr,)S
+2082(int)X
+2195(pos\);)X
+864 2128(SynsetPtr)N
+1218(read_synset\(int)X
+1763(pos,)X
+1918(long)X
+2084(synset_offset,)X
+2561(char)X
+9 f
+2737(*)X
+2739(*)X
+3 f
+(searchstr\);)S
+864 2262(SynsetPtr)N
+1218(parse_synset\(FILE)X
+9 f
+1887(*)X
+1889(*)X
+3 f
+(fp,)S
+2040(int)X
+2153(pos,)X
+2308(char)X
+9 f
+2484(*)X
+2486(*)X
+3 f
+(searchstr\);)S
+864 2396(void)N
+1030(free_syns\(SynsetPtr)X
+1732(synptr\);)X
+864 2530(void)N
+1030 0.1562(free_synset\(SynsetPtr)AX
+1795(synptr\);)X
+864 2664(void)N
+1030(free_index\(IndexPtr)X
+1745(idx\);)X
+864 2798(SynsetPtr)N
+1218(traceptrs_ds\(SynsetPtr)X
+2027(synptr,)X
+2289(int)X
+2402(ptr_type,)X
+2736(int)X
+2849(pos,)X
+3004(int)X
+3117(depth\);)X
+864 2932(SynsetPtr)N
+1218(do_trace\(SynsetPtr)X
+1898(synptr,)X
+2160(int)X
+2273(ptr_type,)X
+2607(int)X
+2720(pos,)X
+2875(int)X
+2988(depth\);)X
+9 s
+576 3066(DESCRIPTION)N
+1 f
+10 s
+864 3162(These)N
+1079(functions)X
+1400(are)X
+1522(used)X
+1693(for)X
+1811(searching)X
+2143(the)X
+2265(WordNet)X
+2588(database.)X
+2929(They)X
+3118(generally)X
+3441(fall)X
+3572(into)X
+3720(several)X
+3972(categories:)X
+864 3258(functions)N
+1187(for)X
+1306(reading)X
+1572(and)X
+1713(parsing)X
+1973(index)X
+2175(\256le)X
+2301(entries;)X
+2561(functions)X
+2883(for)X
+3001(reading)X
+3266(and)X
+3406(parsing)X
+3666(synsets)X
+3921(in)X
+4007(data)X
+4165(\256les;)X
+864 3354(functions)N
+1185(for)X
+1302(tracing)X
+1548(pointers)X
+1829(and)X
+1968(hierarchies;)X
+2366(functions)X
+2688(for)X
+2806(freeing)X
+3058(space)X
+3261(occupied)X
+3575(by)X
+3679(data)X
+3837(structures)X
+4173(allo-)X
+864 3450(cated)N
+1054(with)X
+3 f
+1216(malloc)X
+1 f
+1443(\(3\).)X
+864 3642(In)N
+951(the)X
+1069(following)X
+1400(function)X
+1687(descriptions,)X
+2 f
+2114(pos)X
+1 f
+2245(is)X
+2318(one)X
+2454(of)X
+2541(the)X
+2659(following:)X
+3 f
+1152 3834(1)N
+1 f
+1440(NOUN)X
+3 f
+1152 3930(2)N
+1 f
+1440(VERB)X
+3 f
+1152 4026(3)N
+1 f
+1440(ADJECTIVE)X
+3 f
+1152 4122(4)N
+1 f
+1440(ADVERB)X
+3 f
+864 4314(\256ndtheinfo\()N
+1276(\))X
+1 f
+1329(is)X
+1408(the)X
+1532(primary)X
+1812(search)X
+2044(algorithm)X
+2381(for)X
+2501(use)X
+2634(with)X
+2802(database)X
+3105(interface)X
+3413(applications.)X
+3866(Search)X
+4111(results)X
+864 4410(are)N
+1014(automatically)X
+1501(formatted,)X
+1884(and)X
+2051(a)X
+2138(pointer)X
+2416(to)X
+2529(the)X
+2678(text)X
+2849(buffer)X
+3097(is)X
+3201(returned.)X
+3560(All)X
+3712(searches)X
+4035(listed)X
+4258(in)X
+3 f
+864 4506(WNHOME/include/wnconsts.h)N
+1 f
+1947(can)X
+2085(be)X
+2187(done)X
+2369(by)X
+3 f
+2475(\256ndtheinfo\()X
+2887(\))X
+1 f
+2914(.)X
+3 f
+2980(\256ndtheinfo_ds\()X
+3507(\))X
+1 f
+3560(can)X
+3698(be)X
+3800(used)X
+3973(to)X
+4061(perform)X
+864 4602(most)N
+1044(of)X
+1136(the)X
+1259(searches,)X
+1577(with)X
+1744(results)X
+1978(returned)X
+2271(in)X
+2358(a)X
+2419(linked)X
+2644(list)X
+2766(data)X
+2925(structure.)X
+3271(This)X
+3438(is)X
+3516(for)X
+3635(use)X
+3767(with)X
+3933(applications)X
+864 4698(that)N
+1004(need)X
+1176(to)X
+1258(analyze)X
+1524(the)X
+1642(search)X
+1868(results)X
+2097(rather)X
+2305(than)X
+2463(just)X
+2598(display)X
+2849(them.)X
+864 4890(Both)N
+1041(functions)X
+1361(are)X
+1482(passed)X
+1719(the)X
+1840(same)X
+2028(arguments:)X
+2 f
+2407(searchstr)X
+1 f
+2728(is)X
+2804(the)X
+2925(word)X
+3113(or)X
+3203(collocation)X
+3582(to)X
+3667(search)X
+3896(for;)X
+2 f
+4035(pos)X
+1 f
+4169(indi-)X
+864 4986(cates)N
+1057(the)X
+1187(syntactic)X
+1504(category)X
+1813(to)X
+1906(search)X
+2143(in;)X
+2 f
+2258(ptr_type)X
+1 f
+2556(is)X
+2640(one)X
+2787(of)X
+2885(the)X
+3014(valid)X
+3205(search)X
+3442(types)X
+3642(for)X
+2 f
+3767(searchstr)X
+1 f
+4096(in)X
+2 f
+4189(pos)X
+1 f
+4300(.)X
+864 5082(\(Available)N
+1241(searches)X
+1552(can)X
+1702(be)X
+1816(obtained)X
+2130(by)X
+2248(calling)X
+3 f
+2505(is_de\256ned\()X
+2886(\))X
+1 f
+2952(described)X
+3299(below.\))X
+2 f
+3601(sense_num)X
+1 f
+3992(should)X
+4244(be)X
+3 f
+9 s
+864 5178(ALLSENSES)N
+1 f
+10 s
+1308(if)X
+1385(the)X
+1511(search)X
+1745(is)X
+1826(to)X
+1915(be)X
+2018(done)X
+2201(on)X
+2308(all)X
+2415(senses)X
+2647(of)X
+2 f
+2741(searchstr)X
+1 f
+3066(in)X
+2 f
+3155(pos)X
+1 f
+3266(,)X
+3313(or)X
+3407(a)X
+3470(positive)X
+3750(integer)X
+4000(indicating)X
+864 5274(which)N
+1080(sense)X
+1274(to)X
+1356(search.)X
+3 f
+864 5466(\256ndtheinfo_ds\()N
+1391(\))X
+1 f
+1446(returns)X
+1697(a)X
+1761(linked)X
+1989(list)X
+2114(data)X
+2276(structures)X
+2616(representing)X
+3041(synsets.)X
+3340(Senses)X
+3587(are)X
+3715(linked)X
+3944(through)X
+4222(the)X
+2 f
+864 5562(nextss)N
+1 f
+1080(\256eld)X
+1242(of)X
+1329(a)X
+3 f
+1385(Synset)X
+1 f
+1627(data)X
+1781(structure.)X
+2122(For)X
+2253(each)X
+2421(sense,)X
+2635(synsets)X
+2886(that)X
+3026(match)X
+3242(the)X
+3360(search)X
+3586(speci\256ed)X
+3891(with)X
+2 f
+4053(ptr_type)X
+1 f
+864 5658(are)N
+983(linked)X
+1203(through)X
+1472(the)X
+2 f
+1590(ptrlist)X
+1 f
+1800(\256eld.)X
+2002(See)X
+3 f
+9 s
+2138(Synset)X
+2356(Navigation,)X
+1 f
+10 s
+2730(below,)X
+2966(for)X
+3080(detailed)X
+3354(information)X
+3752(on)X
+3852(the)X
+3971(linked)X
+4192(lists)X
+864 5754(returned.)N
+576 6144(WordNet)N
+895(1.6)X
+2023(Last)X
+2181(change:)X
+2451(30)X
+2551(Sept)X
+2713(1997)X
+4280(1)X
+
+2 p
+%%Page: 2 2
+10 s 10 xH 0 xS 1 f
+576 384(WNSEARCH)N
+1038(\()X
+1078(3WN)X
+1265(\))X
+1965(WordNet)X
+9 f
+2264(\324)X
+1 f
+2355(Library)X
+2616(Functions)X
+3604(WNSEARCH)X
+4066(\()X
+4106(3WN)X
+4293(\))X
+3 f
+864 768(is_de\256ned\()N
+1245(\))X
+1 f
+1304(sets)X
+1456(a)X
+1524(bit)X
+1640(for)X
+1766(each)X
+1946(search)X
+2184(type)X
+2355(that)X
+2508(is)X
+2594(valid)X
+2787(for)X
+2 f
+2914(searchstr)X
+1 f
+3245(in)X
+2 f
+3340(pos)X
+1 f
+3451(,)X
+3504(and)X
+3653(returns)X
+3909(the)X
+4040(resulting)X
+864 864(unsigned)N
+1219(long)X
+1427(integer.)X
+1756(Each)X
+1983(bit)X
+2133(number)X
+2444(corresponds)X
+2898(to)X
+3026(a)X
+3128(pointer)X
+3421(type)X
+3625(constant)X
+3957(de\256ned)X
+4258(in)X
+3 f
+864 960(WNHOME/include/wnconsts.h)N
+1 f
+1922(.)X
+1983(For)X
+2115(example,)X
+2428(if)X
+2498(bit)X
+2603(2)X
+2664(is)X
+2738(set,)X
+2868(the)X
+3 f
+9 s
+2987(HYPERPTR)X
+1 f
+10 s
+3404(search)X
+3631(is)X
+3705(valid)X
+3886(for)X
+2 f
+4002(searchstr)X
+1 f
+4300(.)X
+864 1056(There)N
+1072(are)X
+1191(29)X
+1291(possible)X
+1573(searches.)X
+3 f
+864 1248(in_wn\()N
+1112(\))X
+1 f
+1159(is)X
+1232(used)X
+1399(to)X
+1481(\256nd)X
+1626(the)X
+1745(syntactic)X
+2051(categories)X
+2398(in)X
+2481(the)X
+2600(WordNet)X
+2920(database)X
+3218(that)X
+3359(contain)X
+3616(one)X
+3753(or)X
+3841(more)X
+4027(senses)X
+4253(of)X
+2 f
+864 1344(searchstr)N
+1 f
+1162(.)X
+1233(If)X
+2 f
+1318(pos)X
+1 f
+1460(is)X
+3 f
+9 s
+1544(ALL_POS,)X
+1 f
+10 s
+1917(all)X
+2028(syntactic)X
+2344(categories)X
+2701(are)X
+2831(checked.)X
+3166(Otherwise,)X
+3547(only)X
+3720(the)X
+3849(part)X
+4004(of)X
+4101(speech)X
+864 1440(passed)N
+1101(is)X
+1177(checked.)X
+1504(An)X
+1625(unsigned)X
+1937(integer)X
+2183(is)X
+2259(returned)X
+2550(with)X
+2715(a)X
+2774(bit)X
+2881(set)X
+2993(corresponding)X
+3476(to)X
+3562(each)X
+3734(syntactic)X
+4043(category)X
+864 1536(containing)N
+2 f
+1224(searchstr)X
+1 f
+1522(.)X
+1584(The)X
+1731(bit)X
+1837(number)X
+2104(matches)X
+2389(the)X
+2509(number)X
+2776(for)X
+2892(the)X
+3012(part)X
+3159(of)X
+3248(speech.)X
+3 f
+3528(0)X
+1 f
+3589(is)X
+3663(returned)X
+3952(if)X
+2 f
+4022(searchstr)X
+1 f
+864 1632(is)N
+937(not)X
+1059(present)X
+1311(in)X
+2 f
+1393(pos)X
+1 f
+1504(.)X
+3 f
+864 1824(index_lookup\()N
+1364(\))X
+1 f
+1421(\256nds)X
+2 f
+1606(searchstr)X
+1 f
+1935(in)X
+2028(the)X
+2157(index)X
+2366(\256le)X
+2499(for)X
+2 f
+2624(pos)X
+1 f
+2766(and)X
+2913(returns)X
+3167(a)X
+3234(pointer)X
+3492(to)X
+3585(the)X
+3714(parsed)X
+3955(entry)X
+4151(in)X
+4244(an)X
+3 f
+864 1920(Index)N
+1 f
+1087(data)X
+1249(structure.)X
+2 f
+1598(searchstr)X
+1 f
+1924(must)X
+2107(exactly)X
+2367(match)X
+2591(the)X
+2717(form)X
+2901(of)X
+2996(the)X
+3122(word)X
+3315(\(lower)X
+3553(case)X
+3720(only,)X
+3910(hyphens)X
+4204(and)X
+864 2016(underscores)N
+1268(in)X
+1350(the)X
+1468(same)X
+1653(places\))X
+1901(in)X
+1983(the)X
+2101(index)X
+2299(\256le.)X
+3 f
+9 s
+2461(NULL)X
+1 f
+10 s
+2681(is)X
+2754(returned)X
+3042(if)X
+3111(a)X
+3167(match)X
+3383(is)X
+3456(not)X
+3578(found.)X
+3 f
+864 2208(getindex\()N
+1193(\))X
+1 f
+1244(is)X
+1321(a)X
+1381("smart")X
+1649(search)X
+1880(for)X
+2 f
+1999(searchstr)X
+1 f
+2322(in)X
+2409(the)X
+2532(index)X
+2735(\256le)X
+2862(corresponding)X
+3346(to)X
+2 f
+3433(pos)X
+1 f
+3544(.)X
+3609(It)X
+3683(applies)X
+3935(to)X
+2 f
+4022(searchstr)X
+1 f
+864 2304(an)N
+974(algorithm)X
+1319(that)X
+1473(replaces)X
+1771(underscores)X
+2189(with)X
+2365(hyphens,)X
+2686(hyphens)X
+2987(with)X
+3162(underscores,)X
+3599(removes)X
+3904(hyphens)X
+4204(and)X
+864 2400(underscores,)N
+1295(and)X
+1438(removes)X
+1737(periods)X
+2000(in)X
+2089(an)X
+2192(attempt)X
+2459(to)X
+2548(\256nd)X
+2699(a)X
+2762(form)X
+2945(of)X
+3039(the)X
+3164(string)X
+3373(that)X
+3520(is)X
+3600(an)X
+3703(exact)X
+3900(match)X
+4123(for)X
+4244(an)X
+864 2496(entry)N
+1056(in)X
+1145(the)X
+1270(index)X
+1475(\256le)X
+1604(corresponding)X
+2090(to)X
+2 f
+2179(pos)X
+1 f
+2290(.)X
+3 f
+2357(index_lookup\()X
+2857(\))X
+1 f
+2911(is)X
+2991(called)X
+3210(on)X
+3316(each)X
+3490(transformed)X
+3904(string)X
+4112(until)X
+4284(a)X
+864 2592(match)N
+1089(is)X
+1171(found)X
+1387(or)X
+1483(all)X
+1592(the)X
+1719(different)X
+2025(strings)X
+2267(have)X
+2448(been)X
+2629(tried.)X
+2846(It)X
+2925(returns)X
+3178(a)X
+3244(pointer)X
+3501(to)X
+3593(the)X
+3721(parsed)X
+3 f
+3961(Index)X
+1 f
+4186(data)X
+864 2688(structure)N
+1165(for)X
+2 f
+1279(searchstr)X
+1 f
+1577(,)X
+1617(or)X
+3 f
+9 s
+1704(NULL)X
+1 f
+10 s
+1924(if)X
+1993(a)X
+2049(match)X
+2265(is)X
+2338(not)X
+2460(found.)X
+3 f
+864 2880(read_synset\()N
+1309(\))X
+1 f
+1373(is)X
+1463(used)X
+1647(to)X
+1746(read)X
+1922(a)X
+1995(synset)X
+2232(from)X
+2426(a)X
+2500(byte)X
+2676(offset)X
+2897(in)X
+2997(a)X
+3071(data)X
+3243(\256le.)X
+3423(It)X
+3510(performs)X
+3838(an)X
+3 f
+3952(fseek)X
+1 f
+4126(\(3\))X
+4258(to)X
+2 f
+864 2976(synset_offset)N
+1 f
+1294(in)X
+1377(the)X
+1496(data)X
+1651(\256le)X
+1774(corresponding)X
+2254(to)X
+2 f
+2337(pos)X
+1 f
+2448(,)X
+2489(and)X
+2626(calls)X
+3 f
+2794(parse_synset\()X
+3270(\))X
+1 f
+3317(to)X
+3399(read)X
+3558(and)X
+3694(parse)X
+3884(the)X
+4002(synset.)X
+4262(A)X
+864 3072(pointer)N
+1111(to)X
+1193(the)X
+3 f
+1311(Synset)X
+1 f
+1553(data)X
+1707(structure)X
+2008(containing)X
+2366(the)X
+2484(parsed)X
+2714(synset)X
+2934(is)X
+3007(returned.)X
+3 f
+864 3264(parse_synset\()N
+1340(\))X
+1 f
+1404(reads)X
+1611(the)X
+1746(synset)X
+1983(at)X
+2078(the)X
+2213(current)X
+2478(offset)X
+2698(in)X
+2797(the)X
+2932(\256le)X
+3071(indicated)X
+3402(by)X
+2 f
+3519(fp)X
+1 f
+3581(.)X
+2 f
+3659(pos)X
+1 f
+3808(is)X
+3899(the)X
+4035(syntactic)X
+864 3360(category,)N
+1188(and)X
+2 f
+1331(searchstr)X
+1 f
+1629(,)X
+1676(if)X
+1752(not)X
+3 f
+9 s
+1881(NULL,)X
+1 f
+10 s
+2126(indicates)X
+2438(the)X
+2563(word)X
+2755(in)X
+2844(the)X
+2969(synset)X
+3196(that)X
+3343(the)X
+3468(caller)X
+3674(is)X
+3754(interested)X
+4093(in.)X
+4222(An)X
+864 3456(attempt)N
+1124(is)X
+1197(made)X
+1391(to)X
+1473(match)X
+2 f
+1689(searchstr)X
+1 f
+2007(to)X
+2089(one)X
+2225(of)X
+2312(the)X
+2430(words)X
+2646(in)X
+2728(the)X
+2846(synset.)X
+3106(If)X
+3180(an)X
+3276(exact)X
+3466(match)X
+3682(is)X
+3755(found,)X
+3983(the)X
+2 f
+4102(which-)X
+864 3552(word)N
+1 f
+1048(\256eld)X
+1210(in)X
+1292(the)X
+3 f
+1410(Synset)X
+1 f
+1652(structure)X
+1953(is)X
+2026(set)X
+2135(to)X
+2217(that)X
+2357(word's)X
+2600(number)X
+2865(in)X
+2947(the)X
+3065(synset)X
+3285(\(beginning)X
+3652(to)X
+3734(count)X
+3932(from)X
+3 f
+4108(1)X
+1 f
+(\).)S
+3 f
+864 3744(free_syns\()N
+1225(\))X
+1 f
+1282(is)X
+1365(used)X
+1542(to)X
+1635(free)X
+1792(a)X
+1859(linked)X
+2090(list)X
+2218(of)X
+3 f
+2316(Synset)X
+1 f
+2569(structures)X
+2912(allocated)X
+3233(by)X
+3 f
+3344(\256ndtheinfo_ds\()X
+3871(\))X
+1 f
+3898(.)X
+2 f
+3969(synptr)X
+1 f
+4200(is)X
+4284(a)X
+864 3840(pointer)N
+1111(to)X
+1193(the)X
+1311(list)X
+1428(to)X
+1510(free.)X
+3 f
+864 4032(free_synset\()N
+1288(\))X
+1 f
+1335(frees)X
+1512(the)X
+3 f
+1630(Synset)X
+1 f
+1872(structure)X
+2173(pointed)X
+2433(to)X
+2515(by)X
+2 f
+2615(synptr)X
+1 f
+(.)S
+3 f
+864 4224(free_index\()N
+1265(\))X
+1 f
+1312(frees)X
+1489(the)X
+3 f
+1607(Index)X
+1 f
+1822(structure)X
+2123(pointed)X
+2383(to)X
+2465(by)X
+2 f
+2565(idx)X
+1 f
+2663(.)X
+3 f
+864 4416(traceptrs_ds\()N
+1332(\))X
+1 f
+1381(is)X
+1456(a)X
+1514(recursive)X
+1831(search)X
+2059(algorithm)X
+2392(that)X
+2534(traces)X
+2744(pointers)X
+3024(matching)X
+2 f
+3344(ptr_type)X
+1 f
+3633(starting)X
+3896(with)X
+4061(the)X
+4182(syn-)X
+864 4512(set)N
+979(pointed)X
+1245(to)X
+1333(by)X
+2 f
+1439(synptr)X
+1 f
+(.)S
+1705(Setting)X
+2 f
+1957(depth)X
+1 f
+2161(to)X
+3 f
+2249(1)X
+1 f
+2315(when)X
+3 f
+2515(traceptrs_ds\()X
+2983(\))X
+1 f
+3036(is)X
+3115(called)X
+3333(indicates)X
+3644(a)X
+3706(recursive)X
+4027(search;)X
+3 f
+4280(0)X
+1 f
+864 4608(indicates)N
+1178(a)X
+1243(non-recursive)X
+1714(call.)X
+2 f
+1899(synptr)X
+1 f
+2128(points)X
+2352(to)X
+2444(the)X
+2572(data)X
+2736(structure)X
+3047(representing)X
+3474(the)X
+3602(synset)X
+3832(to)X
+3924(search)X
+4160(for)X
+4284(a)X
+864 4704(pointer)N
+1117(of)X
+1210(type)X
+2 f
+1374(ptr_type)X
+1 f
+1641(.)X
+1707(When)X
+1925(a)X
+1987(pointer)X
+2239(type)X
+2402(match)X
+2623(is)X
+2701(found,)X
+2933(the)X
+3056(synset)X
+3281(pointed)X
+3546(to)X
+3633(is)X
+3711(read)X
+3875(is)X
+3953(linked)X
+4178(onto)X
+864 4800(the)N
+2 f
+984(nextss)X
+1 f
+1202(chain.)X
+1438(Levels)X
+1674(of)X
+1764(the)X
+1885(tree)X
+2029(generated)X
+2365(by)X
+2468(a)X
+2527(recursive)X
+2845(search)X
+3074(are)X
+3196(linked)X
+3419(via)X
+3540(the)X
+2 f
+3661(ptrlist)X
+1 f
+3874(\256eld)X
+4039(structure)X
+864 4896(until)N
+3 f
+9 s
+1047(NULL)X
+1 f
+10 s
+1284(is)X
+1374(found,)X
+1618(indicating)X
+1974(the)X
+2108(top)X
+2246(\(or)X
+2376(bottom\))X
+2665(of)X
+2768(the)X
+2902(tree.)X
+3099(This)X
+3277(function)X
+3580(is)X
+3669(usually)X
+3936(called)X
+4164(from)X
+3 f
+864 4992(\256ndtheinfo_ds\()N
+1391(\))X
+1 f
+1439(for)X
+1554(each)X
+1724(sense)X
+1920(of)X
+2009(the)X
+2129(word.)X
+2356(See)X
+3 f
+9 s
+2494(Synset)X
+2714(Navigation,)X
+1 f
+10 s
+3090(below,)X
+3328(for)X
+3444(detailed)X
+3720(information)X
+4120(on)X
+4222(the)X
+864 5088(linked)N
+1084(lists)X
+1232(returned.)X
+3 f
+864 5280(do_trace\()N
+1203(\))X
+1 f
+1254(performs)X
+1568(the)X
+1690(search)X
+1920(indicated)X
+2238(by)X
+2 f
+2342(ptr_type)X
+1 f
+2634(on)X
+2739(synset)X
+2 f
+2964(synptr)X
+1 f
+3189(in)X
+3276(syntactic)X
+3586(category)X
+2 f
+3888(pos)X
+1 f
+3999(.)X
+2 f
+4064(depth)X
+1 f
+4267(is)X
+864 5376(de\256ned)N
+1120(as)X
+1207(above.)X
+3 f
+1459(do_trace\()X
+1798(\))X
+1 f
+1845(returns)X
+2088(the)X
+2206(search)X
+2432(results)X
+2661(formatted)X
+2993(in)X
+3075(a)X
+3131(text)X
+3271(buffer.)X
+3 f
+9 s
+720 5510(Synset)N
+950(Navigation)X
+1 f
+10 s
+864 5606(Since)N
+1063(the)X
+3 f
+1182(Synset)X
+1 f
+1425(structure)X
+1727(is)X
+1801(used)X
+1969(to)X
+2052(represent)X
+2368(the)X
+2487(synsets)X
+2740(for)X
+2856(both)X
+3020(word)X
+3207(senses)X
+3434(and)X
+3572(pointers,)X
+3872(the)X
+2 f
+3992(ptrlist)X
+1 f
+4204(and)X
+2 f
+864 5702(nextss)N
+1 f
+1085(\256elds)X
+1283(have)X
+1460(different)X
+1762(meanings)X
+2094(depending)X
+2453(on)X
+2558(whether)X
+2842(the)X
+2965(structure)X
+3271(is)X
+3349(a)X
+3409(word)X
+3598(sense)X
+3796(or)X
+3887(pointer.)X
+4178(This)X
+864 5798(can)N
+996(make)X
+1190(navigation)X
+1548(through)X
+1817(the)X
+1935(lists)X
+2083(returned)X
+2371(by)X
+3 f
+2471(\256ndtheinfo_ds\()X
+2998(\))X
+1 f
+3045(confusing.)X
+576 6182(WordNet)N
+895(1.6)X
+2023(Last)X
+2181(change:)X
+2451(30)X
+2551(Sept)X
+2713(1997)X
+4280(2)X
+
+3 p
+%%Page: 3 3
+10 s 10 xH 0 xS 1 f
+576 384(WNSEARCH)N
+1038(\()X
+1078(3WN)X
+1265(\))X
+1965(WordNet)X
+9 f
+2264(\324)X
+1 f
+2355(Library)X
+2616(Functions)X
+3604(WNSEARCH)X
+4066(\()X
+4106(3WN)X
+4293(\))X
+864 768(Navigation)N
+1240(through)X
+1509(the)X
+1627(returned)X
+1915(list)X
+2032(involves)X
+2323(the)X
+2441(following:)X
+864 960(Following)N
+1214(the)X
+2 f
+1334(nextss)X
+1 f
+1552(chain)X
+1748(from)X
+1926(the)X
+2046(synset)X
+2268(returned)X
+2558(moves)X
+2789(through)X
+3061(the)X
+3182(various)X
+3441(senses)X
+3669(of)X
+2 f
+3759(searchstr)X
+1 f
+4057(.)X
+3 f
+9 s
+4120(NULL)X
+1 f
+10 s
+864 1056(indicates)N
+1169(that)X
+1309(end)X
+1445(of)X
+1532(the)X
+1650(chain)X
+1844(of)X
+1931(senses.)X
+864 1248(Following)N
+1217(the)X
+2 f
+1340(ptrlist)X
+1 f
+1555(chain)X
+1754(from)X
+1935(a)X
+3 f
+1996(Synset)X
+1 f
+2243(structure)X
+2549(representing)X
+2971(a)X
+3032(sense)X
+3231(traces)X
+3444(the)X
+3567(hierarchy)X
+3897(of)X
+3990(the)X
+4114(search)X
+864 1344(results)N
+1098(for)X
+1217(that)X
+1362(sense.)X
+1601(Subsequent)X
+1995(links)X
+2175(in)X
+2262(the)X
+2 f
+2385(ptrlist)X
+1 f
+2600(chain)X
+2799(indicate)X
+3078(the)X
+3200(next)X
+3362(level)X
+3542(\(up)X
+3673(or)X
+3764(down,)X
+3986(depending)X
+864 1440(on)N
+964(the)X
+1082(search\))X
+1335(in)X
+1417(the)X
+1535(hierarchy.)X
+3 f
+9 s
+1899(NULL)X
+1 f
+10 s
+2119(indicates)X
+2424(the)X
+2542(end)X
+2678(of)X
+2765(the)X
+2883(chain)X
+3077(of)X
+3164(search)X
+3390(result)X
+3588(synsets.)X
+864 1632(If)N
+939(a)X
+996(synset)X
+1217(pointed)X
+1478(to)X
+1561(by)X
+2 f
+1662(ptrlist)X
+1 f
+1873(has)X
+2001(a)X
+2058(value)X
+2254(in)X
+2338(the)X
+2 f
+2458(nextss)X
+1 f
+2676(\256eld,)X
+2860(it)X
+2926(represents)X
+3274(another)X
+3537(pointer)X
+3786(of)X
+3875(the)X
+3995(same)X
+4182(type)X
+864 1728(at)N
+944(that)X
+1086(level)X
+1264(in)X
+1348(the)X
+1468(hierarchy.)X
+1834(For)X
+1967(example,)X
+2281(some)X
+2472(noun)X
+2654(synsets)X
+2907(have)X
+3081(two)X
+3222(hypernyms.)X
+3639(Following)X
+3988(this)X
+2 f
+4124(nextss)X
+1 f
+864 1824(pointer,)N
+1136(and)X
+1277(then)X
+1440(the)X
+2 f
+1563(ptrlist)X
+1 f
+1778(chain)X
+1977(from)X
+2158(the)X
+3 f
+2281(Synset)X
+1 f
+2528(structure)X
+2834(pointed)X
+3100(to,)X
+3208(traces)X
+3422(another,)X
+3709(parallel,)X
+3996(hierarchy,)X
+864 1920(until)N
+1032(the)X
+1152(end)X
+1290(is)X
+1365(indicated)X
+1681(by)X
+3 f
+9 s
+1783(NULL)X
+1 f
+10 s
+2005(on)X
+2107(that)X
+2 f
+2249(ptrlist)X
+1 f
+2461(chain.)X
+2697(So,)X
+2823(a)X
+3 f
+2881(synset)X
+1 f
+3112(representing)X
+3531(a)X
+3588(pointer)X
+3836(\(versus)X
+4089(a)X
+4146(sense)X
+864 2016(of)N
+2 f
+960(searchstr)X
+1 f
+1258(\))X
+1314(having)X
+1561(a)X
+1626(non-NULL)X
+2016(value)X
+2219(in)X
+2 f
+2310(nextss)X
+1 f
+2535(has)X
+2671(another)X
+2941(chain)X
+3144(of)X
+3240(search)X
+3475(results)X
+3713(linked)X
+3943(through)X
+4222(the)X
+2 f
+864 2112(ptrlist)N
+1 f
+1074(chain)X
+1268(of)X
+1355(the)X
+1473(synset)X
+1693(pointed)X
+1953(to)X
+2035(by)X
+2 f
+2135(nextss)X
+1 f
+2331(.)X
+864 2304(If)N
+2 f
+940(searchstr)X
+1 f
+1260(contains)X
+1549(more)X
+1736(than)X
+1896(one)X
+2034(base)X
+2199(form)X
+2377(in)X
+2461(WordNet)X
+2783(\(as)X
+2900(in)X
+2985(the)X
+3106(noun)X
+3 f
+3289(axes)X
+1 f
+3436(,)X
+3479(which)X
+3698(has)X
+3828(base)X
+3994(forms)X
+3 f
+4204(axe)X
+1 f
+864 2400(and)N
+3 f
+1000(axis)X
+1 f
+1133(\),)X
+1200(synsets)X
+1451(representing)X
+1868(the)X
+1986(search)X
+2212(results)X
+2441(for)X
+2555(each)X
+2723(base)X
+2886(form)X
+3062(are)X
+3181(linked)X
+3401(through)X
+3670(the)X
+2 f
+3788(nextform)X
+1 f
+4093(pointer)X
+864 2496(of)N
+951(the)X
+3 f
+1069(Synset)X
+1 f
+1311(structure.)X
+3 f
+9 s
+720 2630(WordNet)N
+1038(Searches)X
+1 f
+10 s
+864 2726(There)N
+1077(is)X
+1155(no)X
+1260(extensive)X
+1588(description)X
+1970(of)X
+2063(what)X
+2245(each)X
+2419(search)X
+2651(type)X
+2815(is)X
+2894(or)X
+2987(the)X
+3111(results)X
+3346(returned.)X
+3680(Using)X
+3897(the)X
+4021(WordNet)X
+864 2822(interface,)N
+1199(examining)X
+1569(the)X
+1699(source)X
+1941(code,)X
+2145(and)X
+2293(reading)X
+3 f
+2566(wndb)X
+1 f
+2756(\(5WN\))X
+3016(are)X
+3147(the)X
+3277(best)X
+3438(ways)X
+3635(to)X
+3729(see)X
+3864(what)X
+4052(types)X
+4253(of)X
+864 2918(searches)N
+1157(are)X
+1276(available)X
+1586(and)X
+1722(the)X
+1840(data)X
+1994(returned)X
+2282(for)X
+2396(each.)X
+864 3110(Listed)N
+1100(below)X
+1333(are)X
+1469(the)X
+1604(valid)X
+1801(searches)X
+2111(\(found)X
+2362(in)X
+3 f
+2461(WNHOME/include/wnconsts.h)X
+1 f
+3519(\))X
+3583(that)X
+3740(can)X
+3889(be)X
+4002(passed)X
+4253(as)X
+2 f
+864 3206(ptr_type)N
+1 f
+1167(to)X
+3 f
+1265(\256ndtheinfo\()X
+1677(\))X
+1 f
+1704(.)X
+1780(Passing)X
+2059(a)X
+2130(negative)X
+2437(value)X
+2646(\(when)X
+2882(applicable\))X
+3274(causes)X
+3519(a)X
+3590(recursive,)X
+3940(hierarchical)X
+864 3302(search)N
+1090(by)X
+1190(setting)X
+2 f
+1423(depth)X
+1 f
+1621(to)X
+3 f
+1703(1)X
+1 f
+1763(when)X
+3 f
+1957(traceptrs\()X
+2310(\))X
+1 f
+2357(is)X
+2430(called.)X
+576 6144(WordNet)N
+895(1.6)X
+2023(Last)X
+2181(change:)X
+2451(30)X
+2551(Sept)X
+2713(1997)X
+4280(3)X
+
+4 p
+%%Page: 4 4
+10 s 10 xH 0 xS 1 f
+576 384(WNSEARCH)N
+1038(\()X
+1078(3WN)X
+1265(\))X
+1965(WordNet)X
+9 f
+2264(\324)X
+1 f
+2355(Library)X
+2616(Functions)X
+3604(WNSEARCH)X
+4066(\()X
+4106(3WN)X
+4293(\))X
+10 f
+994 688 -0.0506(iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii)AN
+3 f
+1213 784(ptr_type)N
+1802(Value)X
+2102(Pointer)X
+2376(Symbol)X
+3325(Search)X
+1 f
+10 f
+994 800 -0.0506(iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii)AN
+1 f
+1034 896(ANTPTR)N
+1882(1)X
+2354(!)X
+2737(Antonyms)X
+1034 992(HYPERPTR)N
+1882(2)X
+2330(@)X
+2737(Hypernyms)X
+1034 1088(HYPOPTR)N
+1882(3)X
+9 f
+2345(~)X
+1 f
+2737(Hyponyms)X
+1034 1184(ENTAILPTR)N
+1882(4)X
+9 f
+2347(*)X
+1 f
+2737(Entailment)X
+1034 1280(SIMPTR)N
+1882(5)X
+2336(&)X
+2737(Similar)X
+1034 1376(ISMEMBERPTR)N
+1882(6)X
+2316(#m)X
+2737(Member)X
+3029(meronym)X
+1034 1472(ISSTUFFPTR)N
+1882(7)X
+2332(#s)X
+2737(Substance)X
+3082(meronym)X
+1034 1568(ISPARTPTR)N
+1882(8)X
+2327(#p)X
+2737(Part)X
+2886(meronym)X
+1034 1664(HASMEMBERPTR)N
+1882(9)X
+2303(%m)X
+2737(Member)X
+3029(holonym)X
+1034 1760(HASSTUFFPTR)N
+1862(10)X
+2318(%s)X
+2737(Substance)X
+3082(holonym)X
+1034 1856(HASPARTPTR)N
+1862(11)X
+2314(%p)X
+2737(Part)X
+2886(holonym)X
+1034 1952(MERONYM)N
+1862(12)X
+2334(%)X
+2737(All)X
+2859(meronyms)X
+1034 2048(HOLONYM)N
+1862(13)X
+2347(#)X
+2737(All)X
+2859(holonyms)X
+1034 2144(CAUSETO)N
+1862(14)X
+2345(>)X
+2737(Cause)X
+1034 2240(PPLPTR)N
+1862(15)X
+2345(<)X
+2737(Participle)X
+3064(of)X
+3151(verb)X
+1034 2336(SEEALSOPTR)N
+1862(16)X
+2354(\303)X
+2737(Also)X
+2908(see)X
+1034 2432(PERTPTR)N
+1862(17)X
+2356(\\)X
+2737(Pertains)X
+3015(to)X
+3097(noun)X
+3277(or)X
+3364(derived)X
+3625(from)X
+3801(adjective)X
+1034 2528(ATTRIBUTE)N
+1862(18)X
+2334(=)X
+2737(Attribute)X
+1034 2624(VERBGROUP)N
+1862(19)X
+2347($)X
+2737(Verb)X
+2918(group)X
+1034 2720(SYNS)N
+1862(20)X
+2 f
+2316(n/a)X
+1 f
+2737(Find)X
+2903(synonyms)X
+1034 2816(FREQ)N
+1862(21)X
+2 f
+2316(n/a)X
+1 f
+2737(Polysemy)X
+1034 2912(FRAMES)N
+1862(22)X
+2 f
+2316(n/a)X
+1 f
+2737(Verb)X
+2918(example)X
+3210(sentences)X
+3538(and)X
+3674(generic)X
+3931(frames)X
+1034 3008(COORDS)N
+1862(23)X
+2 f
+2316(n/a)X
+1 f
+2737(Noun)X
+2935(coordinates)X
+1034 3104(RELATIVES)N
+1862(24)X
+2 f
+2316(n/a)X
+1 f
+2737(Group)X
+2962(related)X
+3201(senses)X
+1034 3200(HMERONYM)N
+1862(25)X
+2 f
+2316(n/a)X
+1 f
+2737(Hierarchical)X
+3155(meronym)X
+3482(search)X
+1034 3296(HHOLONYM)N
+1862(26)X
+2 f
+2316(n/a)X
+1 f
+2737(Hierarchical)X
+3155(holonym)X
+3459(search)X
+1034 3392(WNESCORT)N
+1862(27)X
+2 f
+2316(n/a)X
+1 f
+2737(Not)X
+2877(used)X
+1034 3488(WNGREP)N
+1862(28)X
+2 f
+2316(n/a)X
+1 f
+2737(Find)X
+2903(keywords)X
+3235(by)X
+3335(substring)X
+1034 3584(OVERVIEW)N
+1862(29)X
+2 f
+2316(n/a)X
+1 f
+2737(Show)X
+2939(all)X
+3039(synsets)X
+3290(for)X
+3404(word)X
+10 f
+994 3600 -0.0506(iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii)AN
+994(c)X
+3568(c)Y
+3488(c)Y
+3408(c)Y
+3328(c)Y
+3248(c)Y
+3168(c)Y
+3088(c)Y
+3008(c)Y
+2928(c)Y
+2848(c)Y
+2768(c)Y
+2688(c)Y
+2608(c)Y
+2528(c)Y
+2448(c)Y
+2368(c)Y
+2288(c)Y
+2208(c)Y
+2128(c)Y
+2048(c)Y
+1968(c)Y
+1888(c)Y
+1808(c)Y
+1728(c)Y
+1648(c)Y
+1568(c)Y
+1488(c)Y
+1408(c)Y
+1328(c)Y
+1248(c)Y
+1168(c)Y
+1088(c)Y
+1008(c)Y
+928(c)Y
+848(c)Y
+768(c)Y
+1746 3600(c)N
+3568(c)Y
+3488(c)Y
+3408(c)Y
+3328(c)Y
+3248(c)Y
+3168(c)Y
+3088(c)Y
+3008(c)Y
+2928(c)Y
+2848(c)Y
+2768(c)Y
+2688(c)Y
+2608(c)Y
+2528(c)Y
+2448(c)Y
+2368(c)Y
+2288(c)Y
+2208(c)Y
+2128(c)Y
+2048(c)Y
+1968(c)Y
+1888(c)Y
+1808(c)Y
+1728(c)Y
+1648(c)Y
+1568(c)Y
+1488(c)Y
+1408(c)Y
+1328(c)Y
+1248(c)Y
+1168(c)Y
+1088(c)Y
+1008(c)Y
+928(c)Y
+848(c)Y
+768(c)Y
+2058 3600(c)N
+3568(c)Y
+3488(c)Y
+3408(c)Y
+3328(c)Y
+3248(c)Y
+3168(c)Y
+3088(c)Y
+3008(c)Y
+2928(c)Y
+2848(c)Y
+2768(c)Y
+2688(c)Y
+2608(c)Y
+2528(c)Y
+2448(c)Y
+2368(c)Y
+2288(c)Y
+2208(c)Y
+2128(c)Y
+2048(c)Y
+1968(c)Y
+1888(c)Y
+1808(c)Y
+1728(c)Y
+1648(c)Y
+1568(c)Y
+1488(c)Y
+1408(c)Y
+1328(c)Y
+1248(c)Y
+1168(c)Y
+1088(c)Y
+1008(c)Y
+928(c)Y
+848(c)Y
+768(c)Y
+2677 3600(c)N
+3568(c)Y
+3488(c)Y
+3408(c)Y
+3328(c)Y
+3248(c)Y
+3168(c)Y
+3088(c)Y
+3008(c)Y
+2928(c)Y
+2848(c)Y
+2768(c)Y
+2688(c)Y
+2608(c)Y
+2528(c)Y
+2448(c)Y
+2368(c)Y
+2288(c)Y
+2208(c)Y
+2128(c)Y
+2048(c)Y
+1968(c)Y
+1888(c)Y
+1808(c)Y
+1728(c)Y
+1648(c)Y
+1568(c)Y
+1488(c)Y
+1408(c)Y
+1328(c)Y
+1248(c)Y
+1168(c)Y
+1088(c)Y
+1008(c)Y
+928(c)Y
+848(c)Y
+768(c)Y
+4190 3600(c)N
+3568(c)Y
+3488(c)Y
+3408(c)Y
+3328(c)Y
+3248(c)Y
+3168(c)Y
+3088(c)Y
+3008(c)Y
+2928(c)Y
+2848(c)Y
+2768(c)Y
+2688(c)Y
+2608(c)Y
+2528(c)Y
+2448(c)Y
+2368(c)Y
+2288(c)Y
+2208(c)Y
+2128(c)Y
+2048(c)Y
+1968(c)Y
+1888(c)Y
+1808(c)Y
+1728(c)Y
+1648(c)Y
+1568(c)Y
+1488(c)Y
+1408(c)Y
+1328(c)Y
+1248(c)Y
+1168(c)Y
+1088(c)Y
+1008(c)Y
+928(c)Y
+848(c)Y
+768(c)Y
+3 f
+864 3792(\256ndtheinfo_ds\()N
+1391(\))X
+1 f
+1438(cannot)X
+1672(perform)X
+1951(the)X
+2069(following)X
+2400(searches:)X
+1152 3984(SEEALSOPTR)N
+1152 4080(VERBGROUP)N
+1152 4176(FREQ)N
+1152 4272(FRAMES)N
+1152 4368(RELATIVES)N
+1152 4464(WNESCORT)N
+1152 4560(WNGREP)N
+1152 4656(OVERVIEW)N
+3 f
+9 s
+576 4790(NOTES)N
+1 f
+10 s
+864 4886(Applications)N
+1302(that)X
+1451(use)X
+1587(WordNet)X
+1915(and/or)X
+2149(the)X
+2276(morphological)X
+2772(functions)X
+3099(must)X
+3283(call)X
+3 f
+3428(wninit\()X
+3685(\))X
+1 f
+3741(at)X
+3829(the)X
+3957(start)X
+4125(of)X
+4222(the)X
+864 4982(program.)N
+1196(See)X
+3 f
+1332(wnutil)X
+1 f
+1549(\(3WN\))X
+1797(for)X
+1911(more)X
+2096(information.)X
+864 5174(In)N
+958(all)X
+1065(function)X
+1359(calls,)X
+2 f
+1553(searchstr)X
+1 f
+1878(may)X
+2043(be)X
+2146(either)X
+2356(a)X
+2419(word)X
+2611(or)X
+2705(a)X
+2768(collocation)X
+3151(formed)X
+3410(by)X
+3518(joining)X
+3772(individual)X
+4124(words)X
+864 5270(with)N
+1026(underscore)X
+1399(characters)X
+1746(\()X
+3 f
+1773(_)X
+1 f
+(\).)S
+3 f
+864 5462($WNHOME/include/wntypes.h)N
+1 f
+1951(describes)X
+2270(the)X
+3 f
+2388(Synset)X
+1 f
+2610(,)X
+3 f
+2650(Index)X
+1 f
+2865(and)X
+3 f
+3001(SearchResults)X
+1 f
+3506(data)X
+3660(structures.)X
+864 5654(The)N
+3 f
+1023(SearchResults)X
+1 f
+1542(structure)X
+1857(de\256nes)X
+2118(\256elds)X
+2325(in)X
+2421(the)X
+2 f
+2553(wnresults)X
+1 f
+2894(global)X
+3129(variable)X
+3423(that)X
+3578(are)X
+3712(set)X
+3836(by)X
+3951(the)X
+4084(various)X
+864 5750(search)N
+1095(functions.)X
+1458(This)X
+1625(is)X
+1703(a)X
+1764(way)X
+1923(to)X
+2010(get)X
+2133(additional)X
+2478(information,)X
+2901(such)X
+3073(as)X
+3165(the)X
+3288(number)X
+3558(of)X
+3650(senses)X
+3880(the)X
+4003(word)X
+4193(has,)X
+864 5846(from)N
+1040(the)X
+1158(search)X
+1384(functions.)X
+1742(The)X
+2 f
+1887(searchds)X
+1 f
+2192(\256eld)X
+2354(is)X
+2427(set)X
+2536(by)X
+3 f
+2636(\256ndtheinfo_ds\()X
+3163(\))X
+1 f
+3190(.)X
+576 6230(WordNet)N
+895(1.6)X
+2023(Last)X
+2181(change:)X
+2451(30)X
+2551(Sept)X
+2713(1997)X
+4280(4)X
+
+5 p
+%%Page: 5 5
+10 s 10 xH 0 xS 1 f
+576 384(WNSEARCH)N
+1038(\()X
+1078(3WN)X
+1265(\))X
+1965(WordNet)X
+9 f
+2264(\324)X
+1 f
+2355(Library)X
+2616(Functions)X
+3604(WNSEARCH)X
+4066(\()X
+4106(3WN)X
+4293(\))X
+864 768(The)N
+2 f
+1009(pos)X
+1 f
+1140(passed)X
+1374(to)X
+3 f
+1456(traceptrs_ds\()X
+1924(\))X
+1 f
+1971(is)X
+2044(not)X
+2166(used.)X
+864 960(The)N
+3 f
+1032(WNDBVERSION)X
+1 f
+1688(environment)X
+2136(variable)X
+2438(indicates)X
+2766(the)X
+2907(format)X
+3164(of)X
+3275(the)X
+3417(WordNet)X
+3760(database)X
+4081(\256les)X
+4258(in)X
+3 f
+864 1056(WNSEARCHDIR)N
+1 f
+1482(.)X
+1542(The)X
+1687(default)X
+1930(is)X
+3 f
+2003(1.6)X
+1 f
+(.)S
+2163(Setting)X
+3 f
+2409(WNDBVERION)X
+1 f
+2998(to)X
+3 f
+3080(1.5)X
+1 f
+3200(allows)X
+3429(the)X
+3547(1.6)X
+3667(library)X
+3901(code)X
+4073(to)X
+4155(work)X
+864 1152(with)N
+1026(the)X
+1144(1.5)X
+1264(database)X
+1561(\256les.)X
+3 f
+9 s
+576 1286(SEE)N
+742(ALSO)X
+10 s
+864 1382(wn)N
+1 f
+966(\(1WN\),)X
+3 f
+1234(wnb)X
+1 f
+1380(\(1WN\),)X
+3 f
+1648(binsrch)X
+1 f
+1905(\(3WN\),)X
+3 f
+2173(malloc)X
+1 f
+2400(\(3\),)X
+3 f
+2534(morph)X
+1 f
+2765(\(3WN\),)X
+3 f
+3033(wnutil)X
+1 f
+3250(\(3WN\),)X
+3 f
+3518(wnintro)X
+1 f
+3789(\(5WN\).)X
+3 f
+9 s
+576 1516(WARNINGS)N
+10 s
+864 1612(parse_synset\()N
+1340(\))X
+1 f
+1397(must)X
+1583(\256nd)X
+1738(an)X
+1845(exact)X
+2046(match)X
+2273(between)X
+2572(the)X
+2 f
+2701(searchstr)X
+1 f
+3030(passed)X
+3275(and)X
+3422(a)X
+3489(word)X
+3685(in)X
+3778(the)X
+3907(synset)X
+4138(to)X
+4231(set)X
+2 f
+864 1708(whichword)N
+1 f
+1219(.)X
+1279(No)X
+1397(attempt)X
+1657(is)X
+1730(made)X
+1924(to)X
+2006(translate)X
+2298(hyphens)X
+2585(and)X
+2721(underscores,)X
+3145(as)X
+3232(is)X
+3305(done)X
+3481(in)X
+3 f
+3563(getindex\()X
+3892(\))X
+1 f
+3919(.)X
+864 1900(The)N
+1009(WordNet)X
+1328(database)X
+1625(and)X
+1761(exception)X
+2093(list)X
+2210(\256les)X
+2363(must)X
+2538(be)X
+2634(open)X
+2810(to)X
+2892(use)X
+3019(any)X
+3155(of)X
+3242(the)X
+3360(searching)X
+3688(functions.)X
+864 2092(A)N
+951(large)X
+1142(search)X
+1378(may)X
+1546(cause)X
+3 f
+1755(\256ndtheinfo\()X
+2167(\))X
+1 f
+2224(to)X
+2316(run)X
+2453(out)X
+2585(of)X
+2682(buffer)X
+2909(space.)X
+3158(The)X
+3313(maximum)X
+3667(buffer)X
+3894(size)X
+4049(is)X
+4132(deter-)X
+864 2188(mined)N
+1088(by)X
+1192(computer)X
+1519(platform.)X
+1859(If)X
+1937(the)X
+2059(buffer)X
+2280(size)X
+2429(is)X
+2506(exceeded)X
+2830(the)X
+2952(following)X
+3287(message)X
+3583(is)X
+3660(printed)X
+3910(in)X
+3995(the)X
+4116(output)X
+864 2284(buffer:)N
+3 f
+1103("Search)X
+1403(too)X
+1530(large.)X
+1764(Narrow)X
+2052(search)X
+2295(and)X
+2443(try)X
+2566(again...")X
+1 f
+2856(.)X
+864 2476(Passing)N
+1128(an)X
+1224(invalid)X
+2 f
+1466(pos)X
+1 f
+1597(will)X
+1741(probably)X
+2046(result)X
+2244(in)X
+2326(a)X
+2382(core)X
+2541(dump.)X
+576 6144(WordNet)N
+895(1.6)X
+2023(Last)X
+2181(change:)X
+2451(30)X
+2551(Sept)X
+2713(1997)X
+4280(5)X
+
+5 p
+%%Trailer
+xt
+
+xs

@@ -1,0 +1,85 @@
+.\" $Id$
+.tr ~
+.TH GLOSSIDX 5WN "30 Sept 1997" "WordNet 1.6" "WordNet\(tm File Formats"
+.SH NAME
+index.gloss, gloss.idx \- index of words found in WordNet synset glosses
+.SH DESCRIPTION
+The WordNet gloss index lists all of the content words found in the
+synset glosses and identifies the gloss(es) containing the word.  The
+file \fBstoplist.pl\fP contains a list of functions words that are
+omitted from the gloss index.
+
+This file can be used to help find WordNet synsets that are related
+topically.  For example, the gloss index can be used to find synsets
+in all syntactic categories related to the monosemous noun and verb
+\fBgolf\fP by retrieving all synsets listed in the gloss index after
+the strings \fBgolf\fP, \fBgolfclub\fP, \fBgolfer\fP and
+\fBgolfers\fP.  
+
+It is important to note, as indicated in the previous example, that in
+this file words are simply strings of consecutive characters found in
+the glosses, and are not syntactically tagged or lemmatized.  Base
+forms and various inflections must be searched for separately.
+Strings are all in lower case, however, so gloss terms encountered in
+synsets in both upper and lower case are folded into the same
+\fIword\fP entry.
+.SS File Format
+The gloss index file is in alphabetical order, fields are separated by
+one space, and each line is terminated with a newline character.
+Items in italicized square brackets may not be present.  
+
+Each line is of the form:
+
+.RS
+\fIword~~pos\fB,\fIsynset_offset~~[pos\fB,\fIsynset_offset...]\fR
+.RE
+
+where \fIword\fP is a lower case string of characters as found in a
+synset gloss and \fIpos\fP is an integer indicating the syntactic
+category of the synset as follows:
+
+.RS
+.nf
+\fB1\fP	NOUN
+\fB2\fP	VERB
+\fB3\fP	ADJECTIVE
+\fB4\fP	ADVERB
+.fi
+.RE
+
+See
+.BR wndb (5WN)
+for a description of \fIsynset_offset\fP.
+.SH NOTES
+The gloss index is a very large file (5.7MB), and is not used by the
+WordNet searching software.  It can be useful to applications that the
+user may wish to write, and is therefore included in the WordNet
+package.  If you are not doing research or development that uses this
+file, it can be deleted from the \fBWNSEARCHDIR\fP directory in order
+to save disk space.
+.SH ENVIRONMENT VARIABLES
+.TP 20
+.B WNHOME
+Base directory for WordNet.  Unix default is 
+\fB/usr/local/wordnet1.6\fP, PC default is \fBC:\ewn16\fP, Macintosh
+default is \fB:\fP.
+.TP 20
+.B WNSEARCHDIR
+Directory in which the WordNet database has been installed.  Unix and
+PC default is \fBWNHOME/dict\fP.  Macintosh default is
+\fB:Database\fP.
+.SH FILES
+All files are in directory \fBWNSEARCHDIR\fP:
+.TP 20
+.B index.gloss
+gloss index (Unix and Macintosh)
+.TP 20
+.B gloss.idx
+gloss index (PC)
+.TP 20
+.B stoplist.pl
+Perl associative array listing function words to ignore when parsing
+glosses
+.SH SEE ALSO
+.BR senseidx (5WN),
+.BR wndb (5WN).

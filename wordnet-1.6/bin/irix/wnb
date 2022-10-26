@@ -1,0 +1,1474 @@
+#!/bin/sh 
+# the following line is evaluated by sh but ignored by tcl \
+wishwn "$0" "$@" &
+# the following line is evaluated by sh but ignored by tcl \
+exec true
+# the preceding lines make this script self-executing on unix systems
+
+##########################################################################
+#                                                                        # 
+#  A Tcl/Tk interface for WordNet                                        # 
+#  by David Slomin (dgslomin@princeton.edu) - 6/97                       # 
+#  based upon the X-Windows version by Brian Gustafson - 5/91            # 
+#                                                                        # 
+##########################################################################
+
+### Configuration
+
+set showcontextualhelp 0 
+set showglosses 1
+set showfileinfo 0
+set showbyteoffset 0
+set showsenseflag 0
+set maxhistorylength 10
+set fontname times
+set fontsize 2
+
+set labonly 0
+if {$tcl_platform(platform) == "unix"} {
+   if {[lsearch -exact [array names env] WNHOME] == -1} {
+	set resourcedir "/usr/local/wordnet1.6/lib/wnres"
+   } else {
+	set resourcedir "$env(WNHOME)/lib/wnres"
+   }
+   set printcommand "lpr"
+}
+if {$tcl_platform(platform) == "windows"} {
+   if {[lsearch -exact [array names env] WNHOME] == -1} {
+	set resourcedir "/wn16/lib"
+   } else {
+	set resourcedir "$env(WNHOME)/lib/wnres"
+   }
+}
+if {$tcl_platform(platform) == "macintosh"} {
+   set resourcedir "Resources"
+}
+
+### Startup
+
+wm title . "WordNet 1.6 Browser"
+
+### Primary Functions
+
+proc displayvalidsearchmenus {searchword} {
+   global posmenu
+   blackout 1
+   set gotone 0
+   pack forget .wordframe.overview
+   for {set posnumber 1} {$posnumber <= 4} {incr posnumber} {
+      set pos [lindex {noun verb adj adv} [expr $posnumber - 1]]
+      pack forget .posmenubar.$pos
+      set bitfield [findvalidsearches [fixword $searchword] $posnumber]
+      if {$bitfield != 0} {
+         pack \
+            .posmenubar.$pos \
+            -side left \
+            -padx 2 \
+            -pady 2 \
+            -before .posmenubar.senselabel
+         .posmenubar.$pos.menu delete 0 end
+         foreach line $posmenu($posnumber) {
+            set label [lindex $line 0]
+            regsub -nocase "this" $label $searchword label
+            set searchtypenumber [lindex $line 1]
+            set abssearchtypenumber [expr abs($searchtypenumber)]
+            set action "\
+               searchanddisplay \"$searchword\" \"\$g_senses\" $posnumber \
+                  $searchtypenumber; \
+               history_add \"$searchword\" \"\$g_senses\" $posnumber \
+                  $searchtypenumber; \
+               pack .wordframe.overview \
+                  -side right \
+                  -padx 5 \
+                  -pady 1
+            "
+            if {[expr $bitfield & [bit $abssearchtypenumber]]} {
+               .posmenubar.$pos.menu add command \
+                  -label $label \
+                  -command $action
+            }
+         }
+         set gotone 1
+      }
+   }
+   if {!$gotone} {
+      .statusbar.status configure \
+         -text "No matches found."
+   }
+   blackout 0
+   return $gotone
+}
+
+proc displayoverview {searchword} {
+   global showfileinfo
+   global showbyteoffset
+   global showsenseflag
+   if {$showfileinfo == 2} {fileinfo 1} else {fileinfo 0}
+   if {$showbyteoffset == 2} {byteoffset 1} else {byteoffset 0}
+   if {$showsenseflag == 2} {senseflag 1} else {senseflag 0}
+   blackout 1
+   .results.text configure \
+      -state normal
+   .results.text delete 1.0 end
+   pack forget .wordframe.overview
+   set gotone 0
+   for {set posnumber 1} {$posnumber <= 4} {incr posnumber} {
+      set bitfield [findvalidsearches [fixword $searchword] $posnumber]
+      if {$bitfield != 0} {
+         # The 29 in the following line should correspond to the value of
+         # OVERVIEW defined in wnconsts.h in the WordNet library
+         set buf [search [fixword $searchword] $posnumber 29 -1]
+         set morphedword ""
+         set buflines [split $buf "\n"]
+         foreach line $buflines {
+            .results.text insert end "$line\n"
+            regexp -nocase -- \
+               "The (noun|verb|adj|adv) (.*) has \[0-9\]+ senses?" \
+               $line dummy dummy morphedword
+            set index [string first " --" $line]
+            if {$index != -1} {
+               set line [string range $line 0 [expr $index - 1]]
+            }
+            if {[regexp -indices -nocase -- \
+               "(\\. |, |> |\} )($morphedword)\[0-9\]*(#\[0-9\]+)?(,|\$)" \
+               $line dummy dummy indices]} {
+               .results.text tag add overviewhighlight \
+                  "end - 2 lines linestart + [lindex $indices 0] chars" \
+                  "end - 2 lines linestart + [expr \
+                     [lindex $indices 1] + 1] chars"
+            }
+         }
+         .results.text delete "end - 1 lines" end
+         set gotone 1
+      }
+   }
+   .results.text configure \
+      -state disabled
+   if {$gotone} { 
+      .statusbar.status configure \
+         -text "Overview of $searchword" 
+   } 
+   blackout 0
+   return $gotone
+}
+
+proc searchanddisplay {searchword senses posnumber searchtypenumber} {
+   global posmenu
+   global showcontextualhelp
+   global showglosses
+   global showfileinfo
+   global showbyteoffset
+   global showsenseflag
+   blackout 1
+   glosses $showglosses
+   if {$showfileinfo > 0} {fileinfo 1} else {fileinfo 0}
+   if {$showbyteoffset > 0} {byteoffset 1} else {byteoffset 0}
+   if {$showsenseflag > 0} {senseflag 1} else {senseflag 0}
+   set longpos [lindex {noun verb adjective adverb} [expr $posnumber - 1]]
+   .results.text configure \
+      -state normal
+   .results.text delete 0.0 end
+   .statusbar.status configure \
+      -text "Searching... (press escape to abort)"
+   update idletasks
+   if {$showcontextualhelp} {
+      foreach line $posmenu($posnumber) {
+         if {[lindex $line 1] == $searchtypenumber} {
+            set linenumber [lsearch $posmenu($posnumber) $line]
+         }
+      }
+      .results.text insert end "\n[contextualhelp $posnumber $linenumber]"
+      .results.text mark set endofhelp [.results.text index "end - 1 char"]
+      .results.text tag add helpstyle 1.0 endofhelp
+   }
+   foreach sense [getsenselist $senses] {
+      .results.text insert end [search [fixword $searchword] $posnumber \
+         $searchtypenumber $sense]
+   }
+   foreach line $posmenu($posnumber) {
+      if {[lindex $line 1] == $searchtypenumber} {
+         set label "\"[lindex $line 0]\" search for $longpos \"$searchword\""
+         eval [lindex $line 2]
+         break
+      }
+   }
+   .results.text configure \
+      -state disabled
+   .statusbar.status configure \
+      -text $label
+   blackout 0
+} 
+
+proc history_add {searchword senses posnumber searchtypenumber} {
+   global posmenu
+   global maxhistorylength
+   if {$posnumber == 0} {
+      set label "$searchword - Overview"
+      set action " \
+         set g_searchword \"$searchword\"; \
+         set g_senses \"\"; \
+         displayvalidsearchmenus \"$searchword\"; \
+         displayoverview \"$searchword\"; \
+         .posmenubar.label configure \
+            -text \"Searches for $searchword:\" \
+      "
+   } else {
+      set longpos [lindex {Noun Verb Adjective Adverb} [expr $posnumber - 1]]
+      foreach line $posmenu($posnumber) {
+         if {[lindex $line 1] == $searchtypenumber} {
+            if {$senses == ""} {
+               set label "$searchword - $longpos / [lindex $line 0]"
+            } else {
+               set label \
+                  "$searchword - $longpos / [lindex $line 0] / $senses"
+            }
+            break
+         }
+      }
+      set action " \
+         set g_searchword \"$searchword\"; \
+         set g_senses \"$senses\"; \
+         displayvalidsearchmenus \"$searchword\"; \
+         searchanddisplay \"$searchword\" \"$senses\" $posnumber \
+            $searchtypenumber; \
+         pack .wordframe.overview \
+            -side right \
+            -padx 5 \
+            -pady 1; \
+         .posmenubar.label configure \
+            -text \"Searches for $searchword:\" \
+      "
+   }
+   .menubar.history.menu insert 0 command \
+      -label $label \
+      -command $action
+   if {[.menubar.history.menu index end] == $maxhistorylength} {
+      .menubar.history.menu delete end
+   }
+}
+
+proc showhelpwidget {w filename windowtitle} {
+   if {[winfo exist .$w]} {raise .$w; return}
+   toplevel .$w
+   wm title .$w $windowtitle
+   grid \
+      [frame .$w.top \
+         -relief raised \
+         -borderwidth 1] \
+      -row 0 \
+      -column 0 \
+      -sticky nsew
+   grid \
+      [frame .$w.buttons \
+         -relief raised \
+         -borderwidth 1] \
+      -row 1 \
+      -column 0 \
+      -sticky nsew
+   grid rowconfigure .$w 0 -weight 1
+   grid rowconfigure .$w 1 -weight 0
+   grid columnconfigure .$w 0 -weight 1
+   text .$w.top.text \
+      -wrap none \
+      -relief sunken \
+      -borderwidth 2 \
+      -font -adobe-courier-medium-r-normal-*-*-120-*-*-*-*-*-* \
+      -state disabled \
+      -yscrollcommand ".$w.top.scrolly set" \
+      -xscrollcommand ".$w.top.scrollx set" \
+      -width 80 \
+      -height 25 \
+      -background White \
+      -foreground Black
+   scrollbar .$w.top.scrolly \
+      -command ".$w.top.text yview" \
+      -relief sunken \
+      -width 12
+   scrollbar .$w.top.scrollx \
+      -orient horizontal \
+      -command ".$w.top.text xview" \
+      -relief sunken \
+      -width 12
+   grid .$w.top.text \
+      -row 0 \
+      -column 0 \
+      -sticky nsew
+   grid .$w.top.scrolly \
+      -row 0 \
+      -column 1 \
+      -sticky nsew
+   grid .$w.top.scrollx \
+      -row 1 \
+      -column 0 \
+      -sticky nsew
+   grid rowconfigure .$w.top 0 -weight 1
+   grid rowconfigure .$w.top 1 -weight 0
+   grid columnconfigure .$w.top 0 -weight 1
+   grid columnconfigure .$w.top 1 -weight 0
+   pack \
+      [button .$w.buttons.dismiss \
+         -text "Dismiss" \
+         -command "destroy .$w"] \
+      -side top \
+      -padx 1 \
+      -pady 1
+   .$w.top.text configure \
+      -state normal
+   set fileid [open $filename "r"]
+   set filetext [read $fileid]
+   close $fileid
+   regsub -all ".\b" $filetext "" filetext
+   .$w.top.text insert end $filetext
+   .$w.top.text configure \
+      -state disabled
+}
+
+proc printtext {whattoprint} {
+   # The following line is a hack to get the passed argument to be
+   # recognised in bound actions, like button presses.
+   global printtext_whattoprint; set printtext_whattoprint $whattoprint
+   global tcl_platform
+   switch $tcl_platform(platform) {
+      unix {
+         global printcommand
+         toplevel .printtxt
+         wm title .printtxt "Print WordNet Results"
+         wm transient .printtxt .
+         scan [wm geometry .] "%dx%d+%d+%d" geom_h geom_w geom_x geom_y
+         wm geometry .printtxt +[expr $geom_x+50]+[expr $geom_y+50]
+         wm resizable .printtxt 0 0
+         grab set .printtxt
+         pack \
+            [frame .printtxt.top] \
+            [frame .printtxt.bottom] \
+            -side top \
+            -padx 10 \
+            -pady 10
+         pack \
+            [label .printtxt.top.label \
+               -text "Print command:"] \
+            [entry .printtxt.top.entry \
+               -textvariable printcommand \
+               -background White \
+               -foreground Black] \
+            -side left
+         if {$tcl_platform(platform) != "macintosh"} {
+            focus .printtxt.top.entry
+         }
+         pack \
+            [button .printtxt.bottom.print \
+               -text "Print" \
+               -command {
+                  set fileId [open "| $printcommand" w]
+                  switch $printtext_whattoprint {
+                     "main" {
+                        puts $fileId [.results.text get 1.0 end]
+                     }
+                     "grep" {
+                        puts $fileId [join \
+                           [.grepwidget.results.frame.list \
+                           get 0 end] "\n"]
+                     }
+                     default {}
+                  }
+                  close $fileId
+                  destroy .printtxt
+               }] \
+            [button .printtxt.bottom.cancel \
+               -text "Cancel" \
+               -command {
+                  destroy .printtxt
+               }] \
+            -side left
+         bind .printtxt <Return> {
+            .printtxt.bottom.print flash
+            .printtxt.bottom.print invoke
+         }
+      }
+      windows {
+         bell
+      }
+      macintosh {
+         bell
+      }
+   }
+}
+
+proc savetext {whattosave} {
+   # The following line is a hack to get the passed argument to be
+   # recognised in bound actions, like button presses.
+   global tcl_platform
+   global savetext_whattosave; set savetext_whattosave $whattosave
+   toplevel .saveas
+   wm title .saveas "Save WordNet Results To File"
+   wm transient .saveas .
+   scan [wm geometry .] "%dx%d+%d+%d" geom_h geom_w geom_x geom_y
+   wm geometry .saveas +[expr $geom_x+50]+[expr $geom_y+50]
+   wm resizable .saveas 0 0
+   grab set .saveas
+   pack \
+      [frame .saveas.top] \
+      [frame .saveas.bottom] \
+      -side top \
+      -padx 10 \
+      -pady 10
+   pack \
+      [label .saveas.top.label \
+         -text "Filename:"] \
+      [entry .saveas.top.entry \
+         -textvariable filename \
+         -background White \
+         -foreground Black] \
+      -side left
+   if {$tcl_platform(platform) != "macintosh"} {
+      focus .saveas.top.entry
+   }
+   pack \
+      [button .saveas.bottom.save \
+         -text "Save" \
+         -command { 
+            if [file exists $filename] {
+               toplevel .savewarning
+               wm title .savewarning "Wordnet Warning"
+               wm transient .savewarning .saveas
+               scan [wm geometry .saveas] "%dx%d+%d+%d" \
+                  geom_h geom_w geom_x geom_y
+               wm geometry .savewarning +[expr $geom_x+50]+[expr $geom_y+50]
+               wm resizable .savewarning 0 0
+               grab set .savewarning
+               pack \
+                  [message .savewarning.message \
+                     -text "The file \"$filename\" already exists.\
+                        Choose \"append\" to add the new search results onto\
+                        the end of the old ones.  Choose \"replace\" to\
+                        discard the old search results and store the new ones\
+                        in their place.  If you choose \"cancel,\" you will\
+                        have the opportunity to select a different file." \
+                     -width 300] \
+                  [frame .savewarning.bottom] \
+                  -side top \
+                  -padx 10 \
+                  -pady 10
+               pack \
+                  [button .savewarning.bottom.append \
+                     -text "Append" \
+                     -command {
+                        set fileId [open $filename "a"]
+                        switch $savetext_whattosave {
+                           "main" {
+                              puts $fileId [.results.text get 1.0 end]
+                           }
+                           "grep" {
+                              puts $fileId [join \
+                                 [.grepwidget.results.frame.list \
+                                 get 0 end] "\n"]
+                           }
+                           default {}
+                        }
+                        close $fileId
+                        destroy .saveas
+                        destroy .savewarning
+                     }] \
+                  [button .savewarning.bottom.replace \
+                     -text "Replace" \
+                     -command {
+                        set fileId [open $filename "w"]
+                        switch $savetext_whattosave {
+                           "main" {
+                              puts $fileId [.results.text get 1.0 end]
+                           }
+                           "grep" {
+                              puts $fileId [join \
+                                 [.grepwidget.results.frame.list \
+                                 get 0 end] "\n"]
+                           }
+                           default {}
+                        }
+                        close $fileId
+                        destroy .saveas
+                        destroy .savewarning
+                     }] \
+                  [button .savewarning.bottom.cancel \
+                     -text "Cancel" \
+                     -command {
+                        destroy .savewarning
+                     }] \
+                  -side left
+               bind .savewarning <Return> {
+                  .savewarning.bottom.append flash
+                  .savewarning.bottom.append invoke
+               }
+            } else {
+               set fileId [open $filename "w"]
+               switch $savetext_whattosave {
+                  "main" {
+                     puts $fileId [.results.text get 1.0 end]
+                  }
+                  "grep" {
+                     puts $fileId [join [.grepwidget.results.frame.list \
+                        get 0 end] "\n"]
+                  }
+                  default {}
+               }
+               close $fileId
+               destroy .saveas
+            }
+         }] \
+      [button .saveas.bottom.cancel \
+         -text "Cancel" \
+         -command {destroy .saveas}] \
+      -side left
+   bind .saveas <Return> {
+      .saveas.bottom.save flash
+      .saveas.bottom.save invoke
+   }
+}
+
+proc setmaxhistorylength {} {
+   global maxhistorylength
+   global tcl_platform
+   toplevel .histlen
+   wm title .histlen "Set Maximum WordNet Browser History Length"
+   wm transient .histlen .
+   scan [wm geometry .] "%dx%d+%d+%d" geom_h geom_w geom_x geom_y
+   wm geometry .histlen +[expr $geom_x+50]+[expr $geom_y+50]
+   wm resizable .histlen 0 0
+   grab set .histlen
+   pack \
+      [frame .histlen.f \
+         -relief raised \
+         -borderwidth 1] \
+      -side top \
+      -fill both \
+      -expand true
+   pack \
+      [frame .histlen.f.top] \
+      [frame .histlen.f.bottom] \
+      -side top \
+      -padx 10 \
+      -pady 10
+   pack \
+      [label .histlen.f.top.label \
+         -text "Maximum history length:"] \
+      [entry .histlen.f.top.entry \
+         -textvariable maxhistorylength \
+         -background White \
+         -foreground Black] \
+      -side left
+   if {$tcl_platform(platform) != "macintosh"} {
+      focus .histlen.f.top.entry
+   }
+   pack \
+      [button .histlen.f.bottom.ok \
+         -text "Ok" \
+         -command {
+            if {[.menubar.history.menu index end] >= $maxhistorylength} {
+               .menubar.history.menu delete $maxhistorylength end
+            }
+            destroy .histlen
+         }] \
+      -side left
+   bind .histlen <Return> {
+      .histlen.f.bottom.ok flash
+      .histlen.f.bottom.ok invoke
+   }
+}
+
+proc showaboutbox {} {
+   global resourcedir
+   if {[winfo exist .aboutbox]} {raise .aboutbox; return}
+   toplevel .aboutbox
+   wm title .aboutbox "About WordNet Browser"
+   wm resizable .aboutbox 0 0
+   pack \
+      [frame .aboutbox.top \
+         -relief raised \
+         -borderwidth 1] \
+      [frame .aboutbox.bottom \
+         -relief raised \
+         -borderwidth 1] \
+      -side top \
+      -fill x \
+      -ipadx 3 \
+      -ipady 3
+   pack \
+      [frame .aboutbox.top.left \
+         -relief flat] \
+      [frame .aboutbox.top.right \
+         -relief flat] \
+      -side left \
+      -fill x \
+      -ipadx 3 \
+      -ipady 3
+   pack \
+      [label .aboutbox.top.left.icon \
+         -bitmap @$resourcedir/wn.xbm] \
+      -side left \
+      -padx 10 
+   pack \
+      [label .aboutbox.top.right.text1 \
+         -anchor w \
+         -justify left \
+         -font "-adobe-helvetica-medium-r-*-*-*-180-*-*-*-*-*-*" \
+         -text "WordNet Browser"] \
+      [label .aboutbox.top.right.text2 \
+         -anchor w \
+         -justify left \
+         -font "-adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*" \
+         -text "A graphical interface to the\nWordNet online lexical\
+            database."] \
+      [label .aboutbox.top.right.text3 \
+         -anchor w \
+         -justify left \
+         -font "-adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*" \
+         -text "This Tcl/Tk version by David Slomin."] \
+      [label .aboutbox.top.right.text4 \
+         -anchor w \
+         -justify left \
+         -font "-adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*" \
+         -text "Based upon an earlier X Window version by\nBrian Gustafson."] \
+      [label .aboutbox.top.right.text5 \
+         -anchor w \
+         -justify left \
+         -font "-adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*" \
+         -text "Copyright 1991-1998\nPrinceton University Cognitive Science Lab"] \
+      [label .aboutbox.top.right.text6 \
+         -anchor w \
+         -justify left \
+         -font "-adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*" \
+         -text "All Rights Reserved"] \
+      -side top \
+      -fill x
+   pack \
+      [button .aboutbox.bottom.ok \
+         -text "Dismiss" \
+         -command {destroy .aboutbox}] \
+      -side top \
+      -padx 3 \
+      -pady 2
+}
+
+proc grepword {} {
+   global g_searchword
+   global grepstr
+   global tcl_platform
+   set grepstr $g_searchword
+   if {[winfo exist .grepwidget]} {raise .grepwidget; return}
+   toplevel .grepwidget
+   wm title .grepwidget "Substring search (grep)"
+   grid \
+      [frame .grepwidget.inputs \
+         -relief raised \
+         -borderwidth 1] \
+      -row 0 \
+      -column 0 \
+      -sticky nsew
+   grid \
+      [frame .grepwidget.results \
+         -relief raised \
+         -borderwidth 1] \
+      -row 1 \
+      -column 0 \
+      -sticky nsew
+   grid \
+      [frame .grepwidget.status \
+         -relief raised \
+         -borderwidth 1] \
+      -row 2 \
+      -column 0 \
+      -sticky nsew
+   grid \
+      [frame .grepwidget.buttons \
+         -relief raised \
+         -borderwidth 1] \
+      -row 3 \
+      -column 0 \
+      -sticky nsew
+   grid rowconfigure .grepwidget 0 -weight 0
+   grid rowconfigure .grepwidget 1 -weight 1
+   grid rowconfigure .grepwidget 2 -weight 0
+   grid rowconfigure .grepwidget 3 -weight 0
+   grid columnconfigure .grepwidget 0 -weight 1
+   tk_optionMenu .grepwidget.inputs.pos greppos Noun Verb Adjective Adverb
+   grid \
+      [label .grepwidget.inputs.label \
+         -text "Substring:"] \
+      -row 0 \
+      -column 0 \
+      -sticky ew \
+      -padx 2 \
+      -pady 2
+   grid \
+      [entry .grepwidget.inputs.word \
+         -textvariable grepstr \
+         -width 15 \
+         -foreground Black \
+         -background White] \
+      -row 0 \
+      -column 1 \
+      -sticky ew \
+      -padx 2 \
+      -pady 2
+   if {$tcl_platform(platform) != "macintosh"} {
+      focus .grepwidget.inputs.word
+   }
+   grid \
+      .grepwidget.inputs.pos \
+      -row 0 \
+      -column 2 \
+      -sticky ew \
+      -padx 2 \
+      -pady 2
+   grid rowconfigure .grepwidget.inputs 0 -weight 1
+   grid columnconfigure .grepwidget.inputs 0 -weight 0
+   grid columnconfigure .grepwidget.inputs 1 -weight 1
+   grid columnconfigure .grepwidget.inputs 2 -weight 0
+   pack \
+      [frame .grepwidget.results.frame] \
+      -side top \
+      -fill both \
+      -expand true \
+      -padx 8 \
+      -pady 8
+   grid \
+      [listbox .grepwidget.results.frame.list \
+         -yscrollcommand ".grepwidget.results.frame.yscroll set" \
+         -foreground Black \
+         -background White \
+         -highlightthickness 0] \
+      -row 0 \
+      -column 0 \
+      -sticky nsew
+   grid \
+      [scrollbar .grepwidget.results.frame.yscroll \
+         -command ".grepwidget.results.frame.list yview" \
+         -width 12 \
+         -highlightthickness 0] \
+      -row 0 \
+      -column 1 \
+      -sticky nsew
+   grid rowconfigure .grepwidget.results.frame 0 -weight 1
+   grid columnconfigure .grepwidget.results.frame 0 -weight 1
+   grid columnconfigure .grepwidget.results.frame 1 -weight 0
+   pack \
+      [label .grepwidget.status.label \
+         -text ""] \
+      -side top
+   pack \
+      [frame .grepwidget.buttons.frame] \
+      -side top
+   grid \
+      [button .grepwidget.buttons.frame.search \
+         -text "Search" \
+         -command {
+            if {[.grepwidget.buttons.frame.search cget -text] == "Search"} {
+               if {[string length $grepstr] >= 3} {
+                  .grepwidget.buttons.frame.search configure \
+                     -text "Abort"
+                  .grepwidget.status.label configure \
+                     -text "Searching... (press escape to abort)"
+                  bind .grepwidget <Escape> {
+                     .grepwidget.buttons.frame.search flash
+                     .grepwidget.buttons.frame.search invoke
+                  }
+                  .grepwidget.results.frame.list delete 0 end
+                  update
+                  set posnumber [lsearch {{} Noun Verb Adjective Adverb} \
+                     $greppos]
+                  set clockstart [clock seconds]
+                  set buf [search [fixword $grepstr] $posnumber 28 0]
+                  set clockstop [clock seconds]
+                  set buflines [split $buf \n]
+                  foreach line $buflines {
+                     .grepwidget.results.frame.list insert end $line
+                  } 
+                  .grepwidget.buttons.frame.search configure \
+                     -text "Search"
+                  .grepwidget.status.label configure -text ""
+                  bind .grepwidget <Escape> {}
+               } else {
+                  bell
+               }
+            } else {
+               bell
+               abortsearch
+            }
+         }] \
+      -row 0 \
+      -column 0 \
+      -sticky nsew \
+      -padx 2 \
+      -pady 2
+   grid \
+      [button .grepwidget.buttons.frame.save \
+         -text "Save" \
+         -command "savetext grep"] \
+      -row 0 \
+      -column 1 \
+      -sticky nsew \
+      -padx 2 \
+      -pady 2
+
+# Printing only works on Unix systems, so don't offer the option on
+# other platforms.
+   if {$tcl_platform(platform) == "unix"} {
+      grid \
+         [button .grepwidget.buttons.frame.print \
+            -text "Print" \
+            -command "printtext grep"] \
+         -row 0 \
+         -column 2 \
+         -sticky nsew \
+         -padx 2 \
+         -pady 2
+   }
+   grid \
+      [button .grepwidget.buttons.frame.dismiss \
+         -text "Dismiss" \
+         -command "destroy .grepwidget"] \
+      -row 0 \
+      -column 3 \
+      -sticky nsew \
+      -padx 2 \
+      -pady 2
+   grid rowconfigure .grepwidget.buttons.frame 0 -weight 0
+   grid columnconfigure .grepwidget.buttons.frame 0 -weight 1
+   grid columnconfigure .grepwidget.buttons.frame 1 -weight 1
+   grid columnconfigure .grepwidget.buttons.frame 2 -weight 1
+   grid columnconfigure .grepwidget.buttons.frame 3 -weight 1
+   bind .grepwidget.results.frame.list <ButtonRelease-1> {
+      set chosengrep [.grepwidget.results.frame.list curselection]
+      if {$chosengrep != {}} {
+         set chosengrepword [.grepwidget.results.frame.list get \
+            [lindex $chosengrep 0]]
+         set g_searchword $chosengrepword
+         set g_senses {}
+         golookup
+      }
+   }
+   bind .grepwidget <Return> {
+      .grepwidget.buttons.frame.search flash
+      .grepwidget.buttons.frame.search invoke
+   }
+}
+
+### Utility functions
+
+proc golookup {} {
+   global g_searchword
+   global g_senses
+   if {[fixword $g_searchword] == ""} return
+   .results.text configure \
+      -state normal
+   .results.text delete 1.0 end
+   .results.text configure \
+      -state disabled
+   set g_senses {}
+   .posmenubar.label configure \
+      -text "Searches for $g_searchword:"
+   if {[displayvalidsearchmenus $g_searchword]} {
+      displayoverview $g_searchword
+      history_add $g_searchword {} 0 0
+   }
+}
+
+proc fixword {word} {
+   regsub "^ *" $word "" word ; # remove leading spaces
+   regsub " *$" $word "" word ; # remove trailing spaces
+   regsub -all " " $word "_" word  ; # change other spaces to underscores
+   return $word 
+}
+
+proc updatefonts {} {
+   set fontsizelist {100 120 140 180 240}
+   global fontname
+   global fontsize
+   .results.text configure \
+      -font "-adobe-$fontname-medium-r-*-*-*-[lindex \
+         $fontsizelist $fontsize]-*-*-*-*-*-*"
+   .results.text tag configure helpstyle \
+      -font "-adobe-$fontname-medium-r-*-*-*-[lindex $fontsizelist \
+         [expr $fontsize - 1]]-*-*-*-*-*-*" \
+      -foreground Blue \
+      -lmargin1 20
+   .results.text tag configure overviewhighlight \
+      -font "-adobe-$fontname-bold-r-*-*-*-[lindex $fontsizelist \
+         $fontsize]-*-*-*-*-*-*" \
+      -foreground Red
+}
+
+proc clearall {} {
+   global g_searchword
+   global g_senses
+   set g_searchword {}
+   set g_senses {}
+   .results.text configure \
+      -state normal
+   .results.text delete 1.0 end
+   .results.text configure \
+      -state disabled
+   foreach pos {noun verb adj adv} { pack forget .posmenubar.$pos }
+   pack forget .wordframe.overview
+   .statusbar.status configure \
+      -text "Enter search word and press return."
+   .posmenubar.label configure \
+      -text ""
+}
+
+proc generaterange {low high} {
+   for {set i $low} {$i <= $high} {incr i} {lappend res $i}
+   return $res
+}
+
+proc getsenselist {senses} {
+   regsub -all {[^0-9*]+} $senses " " senses
+   regsub "^ *" $senses "" senses
+   regsub "\ +$" $senses "" senses
+   if {[regexp {\*} $senses] || ($senses == {})} { set senses 0 }
+   return $senses
+}
+
+proc blackout {q} {
+   set objectlist {
+      .menubar.file
+      .menubar.history
+      .menubar.options
+      .menubar.help
+      .wordframe.entry
+      .wordframe.overview
+      .posmenubar.noun
+      .posmenubar.verb
+      .posmenubar.adj
+      .posmenubar.adv
+      .posmenubar.entry
+   }
+   if {$q} {
+      bind . <KeyPress-Escape> {bell; abortsearch}
+      bind .wordframe.entry <Return> {}
+      bind .results.text <Shift-Button-1> {}
+      bind . <Control-s> {}
+      foreach object $objectlist {
+         $object configure \
+            -state disabled
+      }
+   } else {
+      bind . <KeyPress-Escape> {}
+      bind .wordframe.entry <Return> golookup
+      bind .results.text <Shift-Button-1> {shiftclickhandler %x %y}
+      bind . <Control-s> controlshandler
+      foreach object $objectlist {
+         $object configure \
+            -state normal
+      }
+   }
+}
+
+proc shiftclickhandler {x y} { 
+   global g_searchword
+   set newsearchword [.results.text get "@$x,$y wordstart" "@$x,$y wordend"]
+   if {$newsearchword != "\n"} {
+      set g_searchword $newsearchword
+      golookup
+   }
+}
+
+proc controlshandler {} {
+   global g_searchword
+   if {[catch {selection get} newsearchword]} {
+      bell
+      return
+   }
+   if {$newsearchword != ""} {
+      set g_searchword $newsearchword
+      golookup
+   }
+}
+
+
+### Visual Components
+
+grid \
+   [frame .menubar \
+      -relief raised \
+      -borderwidth 1] \
+   -row 0 \
+   -column 0 \
+   -sticky ew
+grid \
+   [frame .wordframe \
+      -relief raised \
+      -borderwidth 1] \
+   -row 1 \
+   -column 0 \
+   -sticky ew
+grid \
+   [frame .posmenubar \
+      -relief raised \
+      -borderwidth 1] \
+   -row 2 \
+   -column 0 \
+   -sticky ew
+grid \
+   [frame .results \
+      -relief raised \
+      -borderwidth 1] \
+   -row 3 \
+   -column 0 \
+   -sticky nsew \
+   -ipadx 3 \
+   -ipady 3
+grid \
+   [frame .statusbar \
+      -relief raised \
+      -borderwidth 1] \
+   -row 4 \
+   -column 0 \
+   -sticky ew
+grid rowconfigure . 0 -weight 0
+grid rowconfigure . 1 -weight 0
+grid rowconfigure . 2 -weight 0
+grid rowconfigure . 3 -weight 1
+grid rowconfigure . 4 -weight 0
+grid columnconfigure . 0 -weight 1
+pack \
+   [menubutton .menubar.file \
+      -text "File" \
+      -menu .menubar.file.menu \
+      -relief flat] \
+   [menubutton .menubar.history \
+      -text "History" \
+      -menu .menubar.history.menu \
+      -relief flat] \
+   [menubutton .menubar.options \
+      -text "Options" \
+      -menu .menubar.options.menu \
+      -relief flat] \
+   [menubutton .menubar.help \
+      -text "Help" \
+      -menu .menubar.help.menu \
+      -relief flat] \
+   -side left
+pack \
+   [label .wordframe.label \
+      -text "Search Word:"] \
+   [entry .wordframe.entry \
+      -textvariable g_searchword \
+      -width 40 \
+      -background White \
+      -foreground Black] \
+   -side left \
+   -padx 2 \
+   -pady 2
+if {$tcl_platform(platform) != "macintosh"} {
+   focus .wordframe.entry
+}
+button .wordframe.overview \
+   -text "Redisplay Overview" \
+   -padx 3 \
+   -pady 1 \
+   -highlightthickness 0 \
+   -relief raised \
+   -command {
+      set g_senses {}
+      displayoverview $g_searchword
+      history_add $g_searchword {} 0 0
+   }
+pack \
+   [label .posmenubar.label \
+      -text ""] \
+   -side left \
+   -padx 2 \
+   -pady 2
+menubutton .posmenubar.noun \
+   -text "Noun" \
+   -menu .posmenubar.noun.menu \
+   -relief raised
+menubutton .posmenubar.verb \
+   -text "Verb" \
+   -menu .posmenubar.verb.menu \
+   -relief raised
+menubutton .posmenubar.adj \
+   -text "Adjective" \
+   -menu .posmenubar.adj.menu \
+   -relief raised
+menubutton .posmenubar.adv \
+   -text "Adverb" \
+   -menu .posmenubar.adv.menu \
+   -relief raised
+pack \
+   [entry .posmenubar.entry \
+      -textvariable g_senses \
+      -width 10 \
+      -background White \
+      -foreground Black] \
+   [label .posmenubar.senselabel \
+      -text "Senses:"] \
+   -side right \
+   -padx 2 \
+   -pady 2
+grid \
+   [text .results.text \
+      -wrap none \
+      -relief sunken \
+      -borderwidth 2 \
+      -state disabled \
+      -yscrollcommand ".results.scrolly set" \
+      -xscrollcommand ".results.scrollx set" \
+      -background White \
+      -foreground Black \
+      -width 80 \
+      -height 25 \
+      -highlightthickness 0] \
+   -row 0 \
+   -column 0 \
+   -sticky nsew
+updatefonts
+grid \
+   [scrollbar .results.scrolly \
+      -command ".results.text yview" \
+      -width 12 \
+      -relief sunken \
+      -borderwidth 2 \
+      -highlightthickness 0] \
+   -row 0 \
+   -column 1 \
+   -sticky nsew
+grid \
+   [scrollbar .results.scrollx \
+      -orient horizontal \
+      -command ".results.text xview" \
+      -width 12 \
+      -relief sunken \
+      -borderwidth 2 \
+      -highlightthickness 0] \
+   -row 1 \
+   -column 0 \
+   -sticky nsew
+grid rowconfigure .results 0 -weight 1
+grid rowconfigure .results 1 -weight 0
+grid columnconfigure .results 0 -weight 1
+grid columnconfigure .results 1 -weight 0
+pack \
+   [label .statusbar.status \
+      -text "Enter search word and press return."] \
+   -side left \
+   -padx 2
+
+### Regular Menus
+
+menu .menubar.file.menu \
+   -tearoff false
+menu .menubar.history.menu \
+   -tearoff false
+menu .menubar.options.menu \
+   -tearoff false
+menu .menubar.options.menu.font \
+   -tearoff false
+menu .menubar.help.menu \
+   -tearoff false
+.menubar.file.menu add command \
+   -label "Find keywords by substring" \
+   -command grepword
+.menubar.file.menu add separator
+.menubar.file.menu add command \
+   -label "Save current display" \
+   -command "savetext main"
+
+# Printing only works on Unix systems, so don't offer the option on
+# other platforms.
+if {$tcl_platform(platform) == "unix"} {
+   .menubar.file.menu add command \
+      -label "Print current display" \
+      -command "printtext main"
+}
+.menubar.file.menu add command \
+   -label "Clear current display" \
+   -command clearall
+.menubar.file.menu add separator
+if {$labonly} {
+   .menubar.file.menu add command \
+      -label "Reopen database" \
+      -command reopendb
+   .menubar.file.menu add separator
+}
+.menubar.file.menu add command \
+   -label "Exit" \
+   -command { destroy . }
+.menubar.options.menu add checkbutton \
+   -label "Show help with each search" \
+   -variable showcontextualhelp
+.menubar.options.menu add checkbutton \
+   -label "Show descriptive gloss" \
+   -variable showglosses \
+   -command { glosses $showglosses }
+.menubar.options.menu add command \
+   -label "Set advanced search options" \
+   -command {
+      toplevel .adviewopt
+      wm title .adviewopt "Advanced search options"
+      wm transient .adviewopt .
+      scan [wm geometry .] "%dx%d+%d+%d" geom_h geom_w geom_x geom_y
+      wm geometry .adviewopt +[expr $geom_x+50]+[expr $geom_y+50]
+      wm resizable .adviewopt 0 0
+      grab set .adviewopt
+      pack \
+         [frame .adviewopt.fileinfo \
+            -relief raised \
+            -borderwidth 1] \
+         [frame .adviewopt.byteoffset \
+            -relief raised \
+            -borderwidth 1] \
+         [frame .adviewopt.senseflag \
+            -relief raised \
+            -borderwidth 1] \
+         [frame .adviewopt.bottom \
+            -relief raised \
+            -borderwidth 1] \
+         -side top \
+         -fill both \
+         -expand true
+      pack \
+         [frame .adviewopt.fileinfo.f \
+            -relief flat \
+            -borderwidth 10] \
+         -side top \
+         -fill both \
+         -expand true
+      pack \
+         [label .adviewopt.fileinfo.f.label \
+            -text "Lexical file information"] \
+         [radiobutton .adviewopt.fileinfo.f.opt0 \
+            -text "Don't show" \
+            -variable showfileinfo \
+            -value 0] \
+         [radiobutton .adviewopt.fileinfo.f.opt1 \
+            -text "Show with searches" \
+            -variable showfileinfo \
+            -value 1] \
+         [radiobutton .adviewopt.fileinfo.f.opt2 \
+            -text "Show with searches and overview" \
+            -variable showfileinfo \
+            -value 2] \
+         -side top \
+         -anchor w
+      pack \
+         [frame .adviewopt.byteoffset.f \
+            -relief flat \
+            -borderwidth 10] \
+         -side top \
+         -fill both \
+         -expand true
+      pack \
+         [label .adviewopt.byteoffset.f.label \
+            -text "Synset location in database file"] \
+         [radiobutton .adviewopt.byteoffset.f.opt0 \
+            -text "Don't show" \
+            -variable showbyteoffset \
+            -value 0] \
+         [radiobutton .adviewopt.byteoffset.f.opt1 \
+            -text "Show with searches" \
+            -variable showbyteoffset \
+            -value 1] \
+         [radiobutton .adviewopt.byteoffset.f.opt2 \
+            -text "Show with searches and overview" \
+            -variable showbyteoffset \
+            -value 2] \
+         -side top \
+         -anchor w
+      pack \
+         [frame .adviewopt.senseflag.f \
+            -relief flat \
+            -borderwidth 10] \
+         -side top \
+         -fill both \
+         -expand true
+      pack \
+         [label .adviewopt.senseflag.f.label \
+            -text "Sense number"] \
+         [radiobutton .adviewopt.senseflag.f.opt0 \
+            -text "Don't show" \
+            -variable showsenseflag \
+            -value 0] \
+         [radiobutton .adviewopt.senseflag.f.opt1 \
+            -text "Show with searches" \
+            -variable showsenseflag \
+            -value 1] \
+         [radiobutton .adviewopt.senseflag.f.opt2 \
+            -text "Show with searches and overview" \
+            -variable showsenseflag \
+            -value 2] \
+         -side top \
+         -anchor w
+      pack \
+         [button .adviewopt.bottom.ok \
+            -text "Ok" \
+            -command "destroy .adviewopt"] \
+         -side top \
+         -pady 5
+   }   
+.menubar.options.menu add separator
+.menubar.options.menu add command \
+   -label "Set maximum history length" \
+   -command setmaxhistorylength
+.menubar.options.menu add command \
+   -label "Set font" \
+   -command {
+      toplevel .fontopt
+      wm title .fontopt "Font"
+      wm transient .fontopt .
+      scan [wm geometry .] "%dx%d+%d+%d" geom_h geom_w geom_x geom_y
+      wm geometry .fontopt +[expr $geom_x+50]+[expr $geom_y+50]
+      wm resizable .fontopt 0 0
+      grab set .fontopt
+      pack \
+         [frame .fontopt.top] \
+         [frame .fontopt.bottom \
+            -relief raised \
+            -borderwidth 1] \
+         -side top \
+         -fill both \
+         -expand true
+      pack \
+         [frame .fontopt.top.face \
+            -relief raised \
+            -borderwidth 1] \
+         [frame .fontopt.top.size \
+            -relief raised \
+            -borderwidth 1] \
+         -side left \
+         -fill both \
+         -expand true
+      pack \
+         [frame .fontopt.top.face.f \
+            -relief flat \
+            -borderwidth 10] \
+         -side top \
+         -fill both \
+         -expand true
+      pack \
+         [label .fontopt.top.face.f.label \
+            -text "Typeface"] \
+         [radiobutton .fontopt.top.face.f.courier \
+            -text "Courier" \
+            -variable fontname \
+            -value courier] \
+         [radiobutton .fontopt.top.face.f.helvetica \
+            -text "Helvetica" \
+            -variable fontname \
+            -value helvetica] \
+         [radiobutton .fontopt.top.face.f.times \
+            -text "Times" \
+            -variable fontname \
+            -value times] \
+         -side top \
+         -anchor w
+      pack \
+         [frame .fontopt.top.size.f \
+            -relief flat \
+            -borderwidth 10] \
+         -side top \
+         -fill both \
+         -expand true
+      pack \
+         [label .fontopt.top.size.f.label \
+            -text "Size"] \
+         [radiobutton .fontopt.top.size.f.small \
+            -text "Small" \
+            -variable fontsize \
+            -value 1] \
+         [radiobutton .fontopt.top.size.f.medium \
+            -text "Medium" \
+            -variable fontsize \
+            -value 2] \
+         [radiobutton .fontopt.top.size.f.large \
+            -text "Large" \
+            -variable fontsize \
+            -value 3] \
+         -side top \
+         -anchor w
+      pack \
+         [button .fontopt.bottom.ok \
+            -text "Ok" \
+            -command {
+               updatefonts
+               destroy .fontopt
+            }] \
+         -side top \
+         -pady 5
+   }
+.menubar.help.menu add command \
+   -label "Help on using the WordNet browser" \
+   -command {showhelpwidget helpwidget_xwn $resourcedir/wnb.man "WordNet Browser Help"}
+.menubar.help.menu add command \
+   -label "Help on WordNet terminology" \
+   -command {showhelpwidget helpwidget_wngloss $resourcedir/wngloss.man "WordNet Glossary"}
+.menubar.help.menu add command \
+   -label "Display the WordNet license" \
+   -command {showhelpwidget helpwidget_license $resourcedir/license.txt "WordNet License"}
+.menubar.help.menu add separator
+.menubar.help.menu add command \
+   -label "About the WordNet browser" \
+   -command showaboutbox
+
+### Dynamic menus (for each part of speech)
+### The numbers here are from wnconsts.h in the Wordnet library.
+### Unfortunately, Tcl doesn't recognise #defined constants.
+### Please be sure to keep them synchronised.
+
+menu .posmenubar.noun.menu \
+   -tearoff false
+menu .posmenubar.verb.menu \
+   -tearoff false
+menu .posmenubar.adj.menu \
+   -tearoff false
+menu .posmenubar.adv.menu \
+   -tearoff false
+set posmenu(1) { 
+   { "Synonyms, ordered by frequency" 2 {} }
+   { "Synonyms, grouped by similarity" 24 {} }
+   { "Antonyms" 1 {} }
+   { "Coordinate Terms" 23 {} }
+   { "Hypernyms (this is a kind of...)" -2 {} }
+   { "Hyponyms (...is a kind of this), brief" 3 {} }
+   { "Hyponyms (...is a kind of this), full" -3 {} }
+   { "Holonyms (this is a part of...), regular" 13 {} }
+   { "Holonyms (this is a part of...), inherited" -26 {} }
+   { "Meronyms (parts of this), regular" 12 {} }
+   { "Meronyms (parts of this), inherited" -25 {} }
+   { "Attributes (...is a value of this)" 18 {} }
+   { "Familiarity" 21 {} }
+   { "Context sentences" 27 {} }
+}
+set posmenu(2) {
+   { "Synonyms, ordered by frequency" 2 {} }
+   { "Synonyms, grouped by similarity" 24 {} }
+   { "Antonyms" 1 {} }
+   { "Hypernyms (this is one way to...)" -2 {} }
+   { "Troponyms (particular ways to this)" -3 {} }
+   { "This entails doing..." 4 {} }
+   { "This causes..." 14 {} }
+   { "Sentence frames" 22 {} }
+   { "Familiarity" 21 {} }
+   { "Context sentences" 27 {} }
+}
+set posmenu(3) {
+   { "Synonyms" 5 {} }
+   { "Antonyms" 1 {} }
+   { "This is an value of..." 18 {} }
+   { "Familiarity" 21 {} }
+   { "Context Sentences" 27 {} }
+}
+set posmenu(4) {
+   { "Synonyms" 20 {} }
+   { "Antonyms" 1 {} }
+   { "Familiarity" 21 {} }
+   { "Context Sentences" 27 {} }
+}
+
+### Bindings
+
+bind .wordframe.entry <Return> golookup
+bind .results.text <Shift-Button-1> {shiftclickhandler %x %y}
+bind . <Control-s> controlshandler
+bind . <Control-g> grepword
+

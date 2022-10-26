@@ -1,0 +1,94 @@
+'\" t
+.\" $Id$
+.tr ~
+.TH WNGROUPS 7WN "30 Sept 1997" "WordNet 1.6" "WordNet\(tm"
+.SH NAME
+wngroups \- discussion of WordNet search code to group similar senses
+.SH DESCRIPTION
+Standard dictionaries commonly group related senses of a word with
+expressions such as "the act, process, or result of X", or else they
+enter the act, process, and result senses as subheads under a single
+sense number. Unlike standard dictionaries, the default display for
+the WordNet browser is to show senses in order of frequency of use in
+the semantically tagged texts described in
+.BR semcor (7WN).
+The 
+.SB RELATIVES
+search displays similar senses of a word together.  At the present
+time, nouns and some verbs are grouped.
+.SS Noun Groups
+Three relations are used to group noun senses: cousins, sisters, and
+twins.
+
+The cousin groupings exploit the hyponym relation in WordNet.  Many
+WordNet nodes whose hyponyms bear a specific relation to each other
+have been identified.  For example, the noun \fBcrab\fP refers to an
+animal, as well as the edible meat of the animal.  The same relation,
+that of "an animal and its edible meat", holds for \fBlobster\fP,
+\fBchicken\fP and most other matching strings under the \fIfood\fP and
+\fIanimal\fP nodes.
+
+Another class of related senses in the noun hierarchy is called
+sisters.  Sisters are matching strings that are both the immediate
+hyponyms of the same superordinate.  For example, the noun
+\fBflounder\fP can refer to several kinds of \fBflatfish\fP.
+
+The third grouping relation is called twins. These are synsets that
+have at least three words in common.  For example, one sense of
+\fBduo\fP is a musical group and another is a musical composition.
+Both synsets contain \fBduet\fP, \fBduette\fP, and \fBduo\fP.
+
+Transitivity is used to combine groups of overlapping senses into the
+largest sense groups possible.
+.SS Verb Groups
+Some similar senses of verbs have been grouped by the lexicographers.
+This grouping is done statically in the lexicographer source files
+using the semantic \fIpointer_symbol\fP \fB$\fP.  As with the
+noun senses, transitivity is used to combine groups of overlapping
+senses into the largest sense groups possible.
+.SS Exception List
+There are, of course, exceptions to all of the relations. For example,
+the noun \fBcoral\fP is in both the animal and food hierarchies, but
+does not bear the relation of "an animal and its edible meat".
+Candidates for cousin and twin groupings are checked by hand and those
+that should not be grouped together are listed in the exception list
+file.
+.SH NOTES
+Coverage of noun cousins is incomplete.  
+
+Coverage of verb groups is incomplete.
+
+Groups of noun senses are determined at run-time \- not statically \-
+when the
+.SB RELATIVES
+search is requested.  Depending on the computer platform and the
+number of senses involved, this search may run slowly.
+.SH ENVIRONMENT VARIABLES
+.TP 20
+.B WNHOME
+Base directory for WordNet.  Unix default is 
+\fB/usr/local/wordnet1.6\fP, PC default is \fBC:\ewn16\fP, Macintosh
+default is \fB:\fP.
+.TP 20
+.B WNSEARCHDIR
+Directory in which the WordNet database has been installed.  Unix
+default is \fBWNHOME/dict\fP, PC default is \fBWNHOME\edict\fP,
+Macintosh default is \fB:Database\fP.
+.SH FILES
+All files are in directory \fBWNSEARCHDIR\fP:
+.TP 20
+.B cousin.tops
+pairs of noun top nodes (Unix and Macintosh)
+.TP 20
+.B cousin.tps
+pairs of noun top nodes (PC)
+.TP 20
+.B cousin.exc
+senses that should not be grouped
+.SH SEE ALSO
+.BR wn (1WN),
+.BR wnb (1WN),
+.BR wnsearch (3WN),
+.BR wndb (5WN)
+.BR semcor (7WN).
+

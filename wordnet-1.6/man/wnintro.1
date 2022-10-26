@@ -1,0 +1,64 @@
+.\" $Id$
+.tr ~
+.TH WNINTRO 1WN "30 Sept 1997" "WordNet 1.6" "WordNet\(tm User Commands"
+.SH NAME
+wnintro \- WordNet user commands
+.SH SYNOPSIS
+.LP
+\fBescort\fP \- search semantic concordances for sentences containing
+semantic tags
+.LP
+\fBwn\fP \- command line interface to WordNet database
+.LP
+\fBwnb\fP \- window based WordNet browser
+.SH DESCRIPTION
+This section of the \fIWordNet Reference Manual\fP contains manual
+pages that describe commands available with the various WordNet system
+packages.
+
+The WordNet interfaces 
+.BR wn (1WN)
+and
+.BR wnb (1WN)
+allow the user to search the WordNet database and display the
+information textually.  
+.BR escort (1WN)
+is a window based browser for searching the semantic concordances.
+.SH ENVIRONMENT VARIABLES
+.TP 20
+.B WNHOME
+Base directory for WordNet.  Unix default is 
+\fB/usr/local/wordnet1.6\fP, PC default is \fBC:\ewn16\fP, Macintosh
+default is \fB:\fP.
+.TP 20
+.B WNSEARCHDIR
+Directory in which the WordNet database has been installed.  Unix
+default is \fBWNHOME/dict\fP, PC default is \fBWNHOME\edict\fP,
+Macintosh default is \fB:Database\fP.
+.TP 20
+.B WNDBVERSION
+Indicates which format the WordNet database files in \fBWNSEARCHDIR\fP
+are in.  The default is \fB1.6\fP.  Setting \fBWNDBVERION\fP to
+\fB1.5\fP allows the 1.6 commands to work with the 1.5 database files.
+.SH SEE ALSO
+.BR wnintro (3WN),
+.BR wnintro (5WN),
+.BR wnintro (7WN).
+.LP
+Miller, G. A. (1990), ed.
+\fI"WordNet: An On\-Line Lexical Database"\fP.
+International Journal of Lexicography, Volume 3, Number 4.  
+.LP
+Miller, G. A., et al. (1990, 1993). \fI"Five Papers on WordNet"\fP. Cognitive
+Science Laboratory Report 43. (Available from
+\fBftp://ftp.cogsci.princeton.edu/wordnet/\fP.)
+.LP
+Fellbaum, C. (1998), ed.
+\fI"WordNet: An Electronic Lexical Database"\fP.
+MIT Press, Cambridge, MA.
+.SH AVAILABILITY
+WordNet has a World Wide Web site at
+\fBhttp://www.cogsci.princeton.edu/\(apwn/\fP.  From this web site
+users can learn about the WordNet project, run several different
+interfaces to the WordNet database, and download various WordNet
+system packages and \fI"Five Papers on WordNet"\fP.
