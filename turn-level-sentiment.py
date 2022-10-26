@@ -23,7 +23,7 @@ def main():
     # Load SARC pol/main sequences with labels.
     print('Load SARC data')
     train_seqs, test_seqs, train_labels, test_labels = \
-        load_sarc_responses(train_file, test_file, comment_file, lower=args.lower)
+        load_sarc_responses(train_file, test_file, comment_file, lower=False)
 
     # Only use responses for this method. Ignore ancestors.
     train_resp = train_seqs['responses']
