@@ -32,27 +32,29 @@ def main():
     # {0: list_of_first_responses, 1: list_of_second_responses}
     train_docs = {i: [l[i] for l in train_resp] for i in range(2)}
     test_docs = {i: [l[i] for l in test_resp] for i in range(2)}
-    
     # Convert label values, from {0,1} to {-1,1}
-    # train_labels = {i: [2*int(l[i])-1 for l in train_labels] for i in range(2)}
-    # test_labels = {i: [2*int(l[i])-1 for l in test_labels] for i in range(2)}
+    train_labels = {i: [2*int(l[i])-1 for l in train_labels] for i in range(2)}
+    test_labels = {i: [2*int(l[i])-1 for l in test_labels] for i in range(2)}
 
+    train_all_docs = train_docs[0] + train_docs[1]
+    test_all_docs = test_docs[0] + test_docs[1]
     train_all_labels = np.array(train_labels[0] + train_labels[1])
     test_all_labels = np.array(test_labels[0] + test_labels[1])
 
-    # TODO steps for sentiment analysis using VADER:
-    # 1. Do sentiment analysis using built-in libraries.
-    for idx, sentence in enumerate(test_docs[0]):
-        print(sentence)
-        sentiment_analyzer = SentimentIntensityAnalyzer()
+    # Do sentiment analysis using VADER
+    train_all_docs_sentiment = [] 
+    sentiment_analyzer = SentimentIntensityAnalyzer()
+    for idx, sentence in enumerate(train_all_docs):
+        # print(sentence)
         score = sentiment_analyzer.polarity_scores(sentence)
-        print('is_sarcastic: {0}'.format(test_labels[idx][0]))
-        print('neg: {0}, neu: {1}, pos: {2}'
-              .format(score['neg'], score['neu'], score['pos']),
-              end='\n')
-        print()
+        # Treat the sentiment results (values of neg, neu, pos) as learning features
+        train_all_docs_sentiment.append([score['neg'], score['neu'], score['pos']])
+        # print('is_sarcastic: {0}'.format(train_all_labels[idx]))
+        # print('neg: {0}, neu: {1}, pos: {2}'
+        #       .format(score['neg'], score['neu'], score['pos']),
+        #       end='\n')
+        # print()
     
-    # 2. Treat the sentiment results (values of neg, neu, pos) as learning features
     # 3. Use supervised learning algorithm to train and test the data
 
     # # Evaluate this classifier on all responses.
