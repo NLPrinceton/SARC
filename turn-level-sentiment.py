@@ -2,10 +2,9 @@ import nltk
 import numpy as np
 nltk.download('vader_lexicon')
 
-from eval import parse, preprocessing
+from eval import parse
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from sklearn.linear_model import LogisticRegressionCV as LogitCV
-from text_embedding.features import *
 from text_embedding.vectors import *
 from utils import *
 
@@ -57,12 +56,12 @@ def main():
         #       end='\n')
         # print()
     train_all_docs_sentiment = np.array(train_all_docs_sentiment)
-        
+
     for idx, sentence in enumerate(test_all_docs):
         score = sentiment_analyzer.polarity_scores(sentence)
         test_all_docs_sentiment.append([score['neg'], score['neu'], score['pos']])
     test_all_docs_sentiment = np.array(test_all_docs_sentiment)
-    
+
     # 3. Use supervised learning algorithm to train and test the data
 
     # Evaluate this classifier on all responses.
@@ -71,7 +70,7 @@ def main():
     clf.fit(train_all_docs_sentiment, train_all_labels)
     print('\tTrain acc: ', clf.score(train_all_docs_sentiment, train_all_labels))
     print('\tTest acc: ', clf.score(test_all_docs_sentiment, test_all_labels))
-    
+
     # Get vectors for first and second responses.
     n_tr = int(train_all_docs_sentiment.shape[0]/2)
     n_te = int(test_all_docs_sentiment.shape[0]/2)
