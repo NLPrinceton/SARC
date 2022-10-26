@@ -1,4 +1,5 @@
 import nltk
+import numpy as np
 nltk.download('vader_lexicon')
 
 from eval import parse, preprocessing
@@ -42,7 +43,8 @@ def main():
     test_all_labels = np.array(test_labels[0] + test_labels[1])
 
     # Do sentiment analysis using VADER
-    train_all_docs_sentiment = [] 
+    train_all_docs_sentiment = []
+    test_all_docs_sentiment = []
     sentiment_analyzer = SentimentIntensityAnalyzer()
     for idx, sentence in enumerate(train_all_docs):
         # print(sentence)
@@ -54,30 +56,36 @@ def main():
         #       .format(score['neg'], score['neu'], score['pos']),
         #       end='\n')
         # print()
+    train_all_docs_sentiment = np.array(train_all_docs_sentiment)
+        
+    for idx, sentence in enumerate(test_all_docs):
+        score = sentiment_analyzer.polarity_scores(sentence)
+        test_all_docs_sentiment.append([score['neg'], score['neu'], score['pos']])
+    test_all_docs_sentiment = np.array(test_all_docs_sentiment)
     
     # 3. Use supervised learning algorithm to train and test the data
 
-    # # Evaluate this classifier on all responses.
-    # print('Evaluate the classifier on all responses')
-    # clf = LogitCV(Cs=[10**i for i in range(-2, 3)], fit_intercept=False, cv=2, dual=np.less(*train_all_vecs.shape), solver='liblinear', n_jobs=-1, random_state=0)
-    # clf.fit(train_all_vecs, train_all_labels)
-    # print('\tTrain acc: ', clf.score(train_all_vecs, train_all_labels))
-    # print('\tTest acc: ', clf.score(test_all_vecs, test_all_labels))
-    # 
-    # # Get vectors for first and second responses.
-    # n_tr = int(train_all_vecs.shape[0]/2)
-    # n_te = int(test_all_vecs.shape[0]/2)
-    # train_vecs = {i: train_all_vecs[i*n_tr:(i+1)*n_tr,:] for i in range(2)}
-    # test_vecs = {i: test_all_vecs[i*n_te:(i+1)*n_te,:] for i in range(2)}
-    # 
-    # # Final evaluation.
-    # print('Evaluate the classifier on the original dataset')
-    # hyperplane = clf.coef_[0,:]
-    # train_pred_labels = 2*(train_vecs[0].dot(hyperplane) > train_vecs[1].dot(hyperplane))-1
-    # test_pred_labels = 2*(test_vecs[0].dot(hyperplane) > test_vecs[1].dot(hyperplane))-1
-    # train_expect_labels = train_labels[0]
-    # test_expect_labels = test_labels[0]
-    # print('\tTrain acc: ', (train_pred_labels == train_expect_labels).sum() / train_pred_labels.shape[0])
-    # print('\tTest acc: ', (test_pred_labels == test_expect_labels).sum() / test_pred_labels.shape[0])
+    # Evaluate this classifier on all responses.
+    print('Evaluate the classifier on all responses')
+    clf = LogitCV(Cs=[10**i for i in range(-2, 3)], fit_intercept=False, cv=2, dual=np.less(*train_all_docs_sentiment.shape), solver='liblinear', n_jobs=-1, random_state=0)
+    clf.fit(train_all_docs_sentiment, train_all_labels)
+    print('\tTrain acc: ', clf.score(train_all_docs_sentiment, train_all_labels))
+    print('\tTest acc: ', clf.score(test_all_docs_sentiment, test_all_labels))
+    
+    # Get vectors for first and second responses.
+    n_tr = int(train_all_docs_sentiment.shape[0]/2)
+    n_te = int(test_all_docs_sentiment.shape[0]/2)
+    train_vecs = {i: train_all_docs_sentiment[i*n_tr:(i+1)*n_tr,:] for i in range(2)}
+    test_vecs = {i: test_all_docs_sentiment[i*n_te:(i+1)*n_te,:] for i in range(2)}
+
+    # Final evaluation.
+    print('Evaluate the classifier on the original dataset')
+    hyperplane = clf.coef_[0,:]
+    train_pred_labels = 2*(train_vecs[0].dot(hyperplane) > train_vecs[1].dot(hyperplane))-1
+    test_pred_labels = 2*(test_vecs[0].dot(hyperplane) > test_vecs[1].dot(hyperplane))-1
+    train_expect_labels = train_labels[0]
+    test_expect_labels = test_labels[0]
+    print('\tTrain acc: ', (train_pred_labels == train_expect_labels).sum() / train_pred_labels.shape[0])
+    print('\tTest acc: ', (test_pred_labels == test_expect_labels).sum() / test_pred_labels.shape[0])
 
 main()
