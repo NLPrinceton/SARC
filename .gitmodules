@@ -1,6 +1,3 @@
 [submodule "text_embedding"]
 	path = text_embedding
 	url = https://github.com/NLPrinceton/text_embedding.git
-[submodule "WNAffect"]
-	path = WNAffect
-	url = https://github.com/clemtoy/WNAffect.git
